@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Icons, AvatarIconKey } from "@/components/icons";
 import { triggerVibration, playTick, playTimesUp } from "@/lib/utils";
-import { generatePrompt, GeneratePromptOutput } from "@/ai/flows/generatePromptFlow";
-import { generateWildcard, GenerateWildcardOutput } from "@/ai/flows/generateWildcardFlow";
+import { generatePrompt } from "@/ai/flows/generatePromptFlow";
+import { generateWildcard } from "@/ai/flows/generateWildcardFlow";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -28,12 +28,6 @@ interface GameScreenProps {
   isSuddenDeath: boolean;
 }
 
-type PrefetchedPrompts = {
-  truth: GeneratePromptOutput | null;
-  dare: GeneratePromptOutput | null;
-  wildcard: GenerateWildcardOutput | null;
-};
-
 // Use the browser's built-in speech synthesis for a reliable, free TTS experience
 const speak = (text: string) => {
     if (typeof window === 'undefined' || !window.speechSynthesis) {
@@ -48,9 +42,8 @@ const speak = (text: string) => {
 export function GameScreen({ players, currentPlayer, category, intensity, onTurnComplete, onEndGame, rounds, currentRound, isTtsEnabled, setIsTtsEnabled, isSuddenDeath }: GameScreenProps) {
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [turnInProgress, setTurnInProgress] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [generatedPrompts, setGeneratedPrompts] = useState<string[]>([]);
-  const [prefetchedPrompts, setPrefetchedPrompts] = useState<PrefetchedPrompts>({ truth: null, dare: null, wildcard: null });
 
   // Timer state
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -65,97 +58,65 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     if (typeof window !== 'undefined' && !audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
-  }, []);
+    // Reset turn state when player changes
+    clearTurnState();
+  }, [currentPlayer?.id]);
 
-  // Pre-fetch all prompts when the turn starts
-  useEffect(() => {
-    const prefetchPrompts = async () => {
-      // Reset state for the new turn and show loader
-      setIsLoading(true);
-      setTurnInProgress(false);
-      setPrompt(null);
-      setPrefetchedPrompts({ truth: null, dare: null, wildcard: null });
 
-      try {
-        const otherPlayers = players
-          .filter(p => p.id !== currentPlayer.id)
-          .map(({name, gender}) => ({name, gender}));
-        
-        const commonInput = {
-            player: { name: currentPlayer.name, gender: currentPlayer.gender },
-            category,
-            intensity,
-            players: otherPlayers,
-            previousPrompts: generatedPrompts.slice(-20), // Send recent history to AI
-        };
-
-        // Fetch all three prompts in parallel
-        const [truthResult, dareResult, wildcardResult] = await Promise.all([
-          generatePrompt({ ...commonInput, promptType: 'truth' }),
-          generatePrompt({ ...commonInput, promptType: 'dare' }),
-          generateWildcard({ player: commonInput.player, category, intensity, players: commonInput.players, previousPrompts: commonInput.previousPrompts }),
-        ]);
-
-        const newPrefetchedPrompts = {
-          truth: truthResult,
-          dare: dareResult,
-          wildcard: wildcardResult,
-        };
-        
-        setPrefetchedPrompts(newPrefetchedPrompts);
-
-      } catch (e: any) {
-        console.error(e);
-        toast({ title: "Oh no!", description: "The AI is having trouble coming up with ideas. Please try again later.", variant: "destructive" });
-        // Set a fallback prompt so the game can continue
-        setPrefetchedPrompts({
-          truth: { prompt: "Tell a truth." },
-          dare: { prompt: "Do a dare." },
-          wildcard: { challenge: "Challenge!", points: 20 },
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (currentPlayer) {
-      prefetchPrompts();
-    }
-  }, [currentPlayer?.id, players, category, intensity, toast, generatedPrompts]);
-
-  const handlePromptSelection = (type: 'truth' | 'dare' | 'wildcard') => {
+  const handlePromptSelection = async (type: 'truth' | 'dare' | 'wildcard') => {
     triggerVibration();
-    let selectedPrompt: Prompt | null = null;
-    
-    if (type === 'truth' && prefetchedPrompts.truth) {
-      const { prompt, timerInSeconds } = prefetchedPrompts.truth;
-      selectedPrompt = { type: 'truth', text: prompt, points: 5, timerInSeconds };
-    } else if (type === 'dare' && prefetchedPrompts.dare) {
-      const { prompt, timerInSeconds } = prefetchedPrompts.dare;
-      selectedPrompt = { type: 'dare', text: prompt, points: 10, timerInSeconds };
-    } else if (type === 'wildcard' && prefetchedPrompts.wildcard) {
-      const { challenge, points, timerInSeconds } = prefetchedPrompts.wildcard;
-      selectedPrompt = { type: 'wildcard', text: challenge, points, timerInSeconds };
-    }
-
-    if (!selectedPrompt) return;
-    
-    if (isTtsEnabled) {
-      speak(selectedPrompt.text);
-    }
-
-    setPrompt(selectedPrompt);
-    
-    if (selectedPrompt.timerInSeconds) {
-        setTimeLeft(selectedPrompt.timerInSeconds);
-    }
-    
     setTurnInProgress(true);
+    setIsLoading(true);
+
+    try {
+      const otherPlayers = players
+        .filter(p => p.id !== currentPlayer.id)
+        .map(({ name, gender }) => ({ name, gender }));
+
+      const commonInput = {
+        player: { name: currentPlayer.name, gender: currentPlayer.gender },
+        category,
+        intensity,
+        players: otherPlayers,
+        previousPrompts: generatedPrompts.slice(-20), // Send recent history to AI
+      };
+
+      let selectedPrompt: Prompt | null = null;
+
+      if (type === 'truth' || type === 'dare') {
+        const result = await generatePrompt({ ...commonInput, promptType: type });
+        if (!result?.prompt) throw new Error("AI failed to generate a prompt.");
+        const points = type === 'truth' ? 5 : 10;
+        selectedPrompt = { type, text: result.prompt, points, timerInSeconds: result.timerInSeconds };
+      } else if (type === 'wildcard') {
+        const result = await generateWildcard({ player: commonInput.player, category, intensity, players: commonInput.players, previousPrompts: commonInput.previousPrompts });
+        if (!result?.challenge) throw new Error("AI failed to generate a challenge.");
+        selectedPrompt = { type, text: result.challenge, points: result.points, timerInSeconds: result.timerInSeconds };
+      }
+
+      if (!selectedPrompt) return;
+
+      if (isTtsEnabled) {
+        speak(selectedPrompt.text);
+      }
+
+      setPrompt(selectedPrompt);
+      if (selectedPrompt.timerInSeconds) {
+        setTimeLeft(selectedPrompt.timerInSeconds);
+      }
+    } catch (e: any) {
+      console.error(e);
+      toast({ title: "Oh no!", description: "The AI is having trouble coming up with ideas. Please try again.", variant: "destructive" });
+      setTurnInProgress(false); // Go back to selection screen
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   const clearTurnState = () => {
     setPrompt(null);
     setTurnInProgress(false);
+    setIsLoading(false);
     // Clear timer state
     setIsTimerRunning(false);
     setTimeLeft(null);
@@ -264,27 +225,27 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                 </div>
             </CardHeader>
             <CardContent className="min-h-[250px] flex flex-col items-center justify-center p-6 space-y-6">
-                {isLoading ? (
-                    <div className="flex flex-col items-center justify-center min-h-[176px] gap-4">
-                        <Loader2 className="w-12 h-12 animate-spin text-primary" />
-                        <p className="text-muted-foreground">The AI is thinking...</p>
-                    </div>
-                ) : !turnInProgress ? (
+                {!turnInProgress ? (
                     <div className="flex flex-col sm:flex-row gap-4 w-full justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <Button onClick={() => handlePromptSelection('truth')} disabled={!prefetchedPrompts.truth} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600">
+                        <Button onClick={() => handlePromptSelection('truth')} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600">
                             <Icons.Truth className="w-8 h-8"/>
                             Truth
                         </Button>
-                        <Button onClick={() => handlePromptSelection('wildcard')} disabled={!prefetchedPrompts.wildcard} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600">
+                        <Button onClick={() => handlePromptSelection('wildcard')} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600">
                             <Icons.Wildcard className="w-8 h-8"/>
                             Wildcard
                         </Button>
-                        <Button onClick={() => handlePromptSelection('dare')} disabled={!prefetchedPrompts.dare} variant="destructive" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                        <Button onClick={() => handlePromptSelection('dare')} variant="destructive" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
                             <Icons.Dare className="w-8 h-8" />
                             Dare
                         </Button>
                     </div>
-                  ) : (
+                ) : isLoading ? (
+                    <div className="flex flex-col items-center justify-center min-h-[176px] gap-4">
+                        <Loader2 className="w-12 h-12 animate-spin text-primary" />
+                        <p className="text-muted-foreground">The AI is thinking...</p>
+                    </div>
+                ) : (
                     <div className="space-y-4 text-center animate-in fade-in zoom-in-95 duration-500 w-full">
                         <h3 className="text-xl font-semibold capitalize text-primary">{prompt?.type}</h3>
                         <p className="text-2xl font-medium">{prompt?.text}</p>
@@ -314,7 +275,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                             <Button onClick={handleSkip} size="lg" variant="outline" className="transition-transform transform-gpu hover:scale-105 active:scale-95">
                                 Skip (-5 Pts)
                             </Button>
-                            <Button onClick={handleComplete} size="lg" className="transition-transform transform-gpu hover:scale-105 active:scale-95">
+                            <Button onClick={handleComplete} size="lg" className="transition-transform transform-gpu hover:scale-105 active:scale-95" disabled={isTimerRunning}>
                                 Completed
                             </Button>
                         </div>
