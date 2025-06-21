@@ -30,11 +30,14 @@ export function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
       <CardContent>
         <p className="text-muted-foreground">Are you ready for the challenge?</p>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col gap-4">
         <Button onClick={handleGetStartedClick} className="w-full" size="lg">
           Get Started
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
+        <p className="text-xs text-muted-foreground text-center px-4">
+          By playing, you assume all risks and are solely responsible for your actions. The creators of this game are not liable for any consequences. Please play responsibly.
+        </p>
       </CardFooter>
     </Card>
   );
