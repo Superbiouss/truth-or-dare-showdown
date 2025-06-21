@@ -35,20 +35,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const getAudio = async (text: string) => {
-    if (!isTtsEnabled) return;
-    try {
-        const result = await generateSpeech({
-            text,
-            gender: currentPlayer.gender,
-        });
-        setAudioUrl(result.audioDataUri);
-    } catch (e) {
-        console.error("TTS generation failed:", e);
-        // Don't show a toast for this, as it's a non-critical feature
-    }
-  }
-
   const getTruthOrDare = async (type: 'truth' | 'dare') => {
     triggerVibration();
     setIsLoading(true);
@@ -67,11 +53,26 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             previousPrompts: generatedPrompts.slice(-25),
         });
 
+        const promptText = result.prompt;
         const points = type === 'truth' ? 5 : 10;
-        setPrompt({ type, text: result.prompt, points });
-        setGeneratedPrompts(prev => [...prev, result.prompt]);
+        let finalAudioUrl: string | null = null;
+        
+        if (isTtsEnabled) {
+            try {
+                const speechResult = await generateSpeech({
+                    text: promptText,
+                    gender: currentPlayer.gender,
+                });
+                finalAudioUrl = speechResult.audioDataUri;
+            } catch (e) {
+                console.error("TTS generation failed:", e);
+            }
+        }
+
+        setPrompt({ type, text: promptText, points });
+        setGeneratedPrompts(prev => [...prev, promptText]);
+        setAudioUrl(finalAudioUrl);
         setTurnInProgress(true);
-        getAudio(result.prompt);
     } catch (e) {
         console.error(e);
         toast({ title: "Oh no!", description: "The AI is sleeping on the job. Please try again.", variant: "destructive" });
@@ -97,10 +98,25 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             previousPrompts: generatedPrompts.slice(-25),
         });
 
-        setPrompt({ type: 'wildcard', text: result.challenge, points: result.points });
-        setGeneratedPrompts(prev => [...prev, result.challenge]);
+        const challengeText = result.challenge;
+        let finalAudioUrl: string | null = null;
+
+        if (isTtsEnabled) {
+             try {
+                const speechResult = await generateSpeech({
+                    text: challengeText,
+                    gender: currentPlayer.gender,
+                });
+                finalAudioUrl = speechResult.audioDataUri;
+            } catch (e) {
+                console.error("TTS generation failed:", e);
+            }
+        }
+
+        setPrompt({ type: 'wildcard', text: challengeText, points: result.points });
+        setGeneratedPrompts(prev => [...prev, challengeText]);
+        setAudioUrl(finalAudioUrl);
         setTurnInProgress(true);
-        getAudio(result.challenge);
     } catch (e) {
         console.error(e);
         toast({ title: "Oh no!", description: "The AI is sleeping on the job. Please try again.", variant: "destructive" });
