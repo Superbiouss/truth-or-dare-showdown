@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { User, Users } from "lucide-react";
+import { User, X, PlusCircle } from "lucide-react";
 import { triggerVibration } from "@/lib/utils";
 
 interface PlayerSetupProps {
@@ -15,25 +15,42 @@ interface PlayerSetupProps {
 }
 
 export function PlayerSetup({ onStart }: PlayerSetupProps) {
-  const [numPlayers, setNumPlayers] = useState<number | null>(null);
-  const [playerNames, setPlayerNames] = useState<string[]>([]);
+  const [players, setPlayers] = useState<{ name: string }[]>([
+    { name: "" },
+    { name: "" },
+  ]);
   const { toast } = useToast();
 
-  const handleNumPlayerSelect = (num: number) => {
-    triggerVibration();
-    setNumPlayers(num);
-    setPlayerNames(Array(num).fill(""));
+  const handleNameChange = (index: number, name: string) => {
+    const newPlayers = [...players];
+    newPlayers[index] = { name };
+    setPlayers(newPlayers);
   };
 
-  const handleNameChange = (index: number, name: string) => {
-    const newNames = [...playerNames];
-    newNames[index] = name;
-    setPlayerNames(newNames);
+  const addPlayer = () => {
+    triggerVibration();
+    if (players.length < 4) {
+      setPlayers([...players, { name: "" }]);
+    } else {
+        toast({
+            title: "Max players reached",
+            description: "You can have a maximum of 4 players.",
+            variant: "destructive"
+        })
+    }
+  };
+
+  const removePlayer = (index: number) => {
+    triggerVibration();
+    if (players.length > 2) {
+      const newPlayers = players.filter((_, i) => i !== index);
+      setPlayers(newPlayers);
+    }
   };
 
   const handleStartGame = () => {
-    triggerVibration();
-    if (playerNames.some((name) => name.trim() === "")) {
+    triggerVibration([100, 50, 100]);
+    if (players.some((p) => p.name.trim() === "")) {
       toast({
         title: "Incomplete Setup",
         description: "Please enter a name for every player.",
@@ -42,60 +59,56 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
       return;
     }
 
-    const newPlayers: Player[] = playerNames.map((name, index) => ({
+    const newPlayers: Player[] = players.map((p, index) => ({
       id: index,
-      name: name.trim(),
+      name: p.name.trim(),
       score: 0,
     }));
     onStart(newPlayers);
   };
-  
-  const playerCounts = [2, 3, 4];
 
   return (
     <Card className="w-full max-w-md bg-card/30 backdrop-blur-lg border border-primary/20 shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl">Player Setup</CardTitle>
-        <CardDescription>
-          {numPlayers === null
-            ? "Choose the number of players."
-            : "Enter player names."}
-        </CardDescription>
+        <CardDescription>Add up to 4 players to start the game.</CardDescription>
       </CardHeader>
-      <CardContent className="min-h-[200px]">
-        {numPlayers === null ? (
-          <div className="flex justify-around items-center pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-             {playerCounts.map((num) => (
-                <Button
-                    key={num}
-                    variant="outline"
-                    className="w-24 h-24 flex-col gap-2 text-lg transition-transform transform-gpu hover:scale-105 active:scale-95"
-                    onClick={() => handleNumPlayerSelect(num)}
-                >
-                    <Users />
-                    {num} Players
-                </Button>
-             ))}
+      <CardContent className="min-h-[200px] space-y-4">
+        {players.map((player, index) => (
+          <div key={index} className="flex items-center gap-2 animate-in fade-in-0 duration-500">
+            <Label htmlFor={`player-${index}`} className="sr-only">Player {index + 1}</Label>
+            <div className="relative flex-grow">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id={`player-${index}`}
+                placeholder={`Player ${index + 1}'s Name`}
+                value={player.name}
+                onChange={(e) => handleNameChange(index, e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            {players.length > 2 && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => removePlayer(index)}
+                className="text-muted-foreground hover:text-destructive transition-colors"
+                aria-label="Remove player"
+              >
+                <X className="w-4 h-4" />
+              </Button>
+            )}
           </div>
-        ) : (
-          <div className="space-y-4 animate-in fade-in-0 duration-500">
-            {playerNames.map((name, index) => (
-              <div key={index} className="space-y-2">
-                <Label htmlFor={`player-${index}`}>Player {index + 1}</Label>
-                <div className="relative">
-                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <Input
-                    id={`player-${index}`}
-                    placeholder={`Enter Player ${index + 1}'s Name`}
-                    value={name}
-                    onChange={(e) => handleNameChange(index, e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-            ))}
-             <Button variant="link" onClick={() => { triggerVibration(); setNumPlayers(null); }}>
-                Back
+        ))}
+        {players.length < 4 && (
+          <div className="pt-2 animate-in fade-in-0 duration-500">
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={addPlayer}
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Player
             </Button>
           </div>
         )}
@@ -103,7 +116,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
       <CardFooter>
         <Button
           onClick={handleStartGame}
-          disabled={numPlayers === null}
+          disabled={players.some(p => p.name.trim() === "")}
           className="w-full"
           size="lg"
         >
