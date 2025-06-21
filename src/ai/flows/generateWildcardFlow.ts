@@ -19,7 +19,8 @@ const GenerateWildcardInputSchema = z.object({
   player: PlayerPromptSchema,
   category: z.enum(['kids', 'teens', '18+']),
   intensity: z.number().min(1).max(5),
-  players: z.array(PlayerPromptSchema)
+  players: z.array(PlayerPromptSchema),
+  previousPrompts: z.array(z.string()).optional().describe('A list of challenges that have already been used in this game.')
 });
 export type GenerateWildcardInput = z.infer<typeof GenerateWildcardInputSchema>;
 
@@ -39,6 +40,7 @@ const prompt = ai.definePrompt({
   output: { schema: GenerateWildcardOutputSchema },
   prompt: `You are a fun and creative game host for a game of Truth or Dare.
 Your task is to generate a single, engaging "Wildcard" challenge for the current player. A wildcard is a fun, creative, unexpected task that is NOT a simple truth or a dare. It could involve acting, a mini-game, or interacting with the environment.
+The challenge must be short, simple, and very easy to understand for the selected category.
 
 Game Details:
 - Category: {{category}}
@@ -52,6 +54,13 @@ Other Players in the game:
 {{#each players}}
 - {{this.name}} ({{this.gender}})
 {{/each}}
+
+{{#if previousPrompts}}
+To ensure variety, please DO NOT generate any of the following challenges that have already been used in this game:
+{{#each previousPrompts}}
+- "{{this}}"
+{{/each}}
+{{/if}}
 
 Please generate a creative Wildcard challenge and decide how many points it's worth (between 15 and 30). Higher points for harder challenges.
 - Keep challenges appropriate for the selected category and intensity.

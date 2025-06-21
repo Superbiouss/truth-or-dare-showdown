@@ -20,7 +20,8 @@ const GeneratePromptInputSchema = z.object({
   category: z.enum(['kids', 'teens', '18+']),
   intensity: z.number().min(1).max(5),
   promptType: z.enum(['truth', 'dare']),
-  players: z.array(PlayerPromptSchema)
+  players: z.array(PlayerPromptSchema),
+  previousPrompts: z.array(z.string()).optional().describe('A list of prompts that have already been used in this game.')
 });
 export type GeneratePromptInput = z.infer<typeof GeneratePromptInputSchema>;
 
@@ -40,6 +41,7 @@ const prompt = ai.definePrompt({
   output: { schema: GeneratePromptOutputSchema },
   prompt: `You are a fun and creative game host for a game of Truth or Dare.
 Your task is to generate a single, engaging "{{promptType}}" question for the current player.
+The question must be short, simple, and very easy to understand for the selected category.
 
 Game Details:
 - Category: {{category}}
@@ -53,6 +55,13 @@ Other Players in the game:
 {{#each players}}
 - {{this.name}} ({{this.gender}})
 {{/each}}
+
+{{#if previousPrompts}}
+To ensure variety, please DO NOT generate any of the following prompts that have already been used in this game:
+{{#each previousPrompts}}
+- "{{this}}"
+{{/each}}
+{{/if}}
 
 Please generate a creative and context-aware "{{promptType}}" question.
 - For the 'kids' category, keep it light, funny, and age-appropriate.

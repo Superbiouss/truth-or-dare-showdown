@@ -27,6 +27,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [turnInProgress, setTurnInProgress] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [generatedPrompts, setGeneratedPrompts] = useState<string[]>([]);
   const { toast } = useToast();
 
   const getTruthOrDare = async (type: 'truth' | 'dare') => {
@@ -43,10 +44,12 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             intensity,
             promptType: type,
             players: otherPlayers,
+            previousPrompts: generatedPrompts,
         });
 
         const points = type === 'truth' ? 5 : 10;
         setPrompt({ type, text: result.prompt, points });
+        setGeneratedPrompts(prev => [...prev, result.prompt]);
         setTurnInProgress(true);
     } catch (e) {
         console.error(e);
@@ -69,9 +72,11 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             category,
             intensity,
             players: otherPlayers,
+            previousPrompts: generatedPrompts,
         });
 
         setPrompt({ type: 'wildcard', text: result.challenge, points: result.points });
+        setGeneratedPrompts(prev => [...prev, result.challenge]);
         setTurnInProgress(true);
     } catch (e) {
         console.error(e);
