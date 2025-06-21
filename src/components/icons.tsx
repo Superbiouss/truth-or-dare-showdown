@@ -21,5 +21,5 @@ export const Icons = {
     Star,
 };
 
-export const avatarIconKeys = ['Cat', 'Dog', 'Ghost', 'Rocket', 'Heart', 'Star'] as const;
+export const avatarIconKeys = ['Cat', 'Dog', 'Ghost', 'Rocket', 'Heart', 'Star', 'Gamepad', 'AI'] as const;
 export type AvatarIconKey = typeof avatarIconKeys[number];

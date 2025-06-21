@@ -43,13 +43,23 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
 
   const addPlayer = () => {
     triggerVibration();
-    if (players.length < 4) {
-      const nextAvatar = avatarIconKeys[players.length % avatarIconKeys.length];
-      setPlayers([...players, { name: "", gender: 'male', avatar: nextAvatar }]);
+    if (players.length < 8) {
+      const usedAvatars = new Set(players.map(p => p.avatar));
+      const nextAvatar = avatarIconKeys.find(key => !usedAvatars.has(key));
+      
+      if (nextAvatar) {
+        setPlayers([...players, { name: "", gender: 'male', avatar: nextAvatar }]);
+      } else {
+        toast({
+            title: "No available avatars",
+            description: "All avatars are currently in use.",
+            variant: "destructive"
+        })
+      }
     } else {
         toast({
             title: "Max players reached",
-            description: "You can have a maximum of 4 players.",
+            description: "You can have a maximum of 8 players.",
             variant: "destructive"
         })
     }
@@ -88,7 +98,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl">Player Setup</CardTitle>
-        <CardDescription>Add up to 4 players to start the game.</CardDescription>
+        <CardDescription>Add up to 8 players to start the game.</CardDescription>
       </CardHeader>
       <CardContent className="min-h-[200px] space-y-4">
         {players.map((player, index) => (
@@ -136,8 +146,9 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
             <div className="flex items-center gap-2 pt-1 flex-wrap">
                 {avatarIconKeys.map((iconKey) => {
                     const Icon = Icons[iconKey];
+                    const isTaken = players.some((p, i) => i !== index && p.avatar === iconKey);
                     return (
-                        <Button key={iconKey} variant={player.avatar === iconKey ? 'default' : 'outline'} size="icon" onClick={() => handleAvatarChange(index, iconKey)} className="rounded-full">
+                        <Button key={iconKey} variant={player.avatar === iconKey ? 'default' : 'outline'} size="icon" onClick={() => handleAvatarChange(index, iconKey)} className="rounded-full" disabled={isTaken}>
                             <Icon className="w-5 h-5" />
                         </Button>
                     )
@@ -145,7 +156,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
             </div>
           </div>
         ))}
-        {players.length < 4 && (
+        {players.length < 8 && (
           <div className="pt-2 animate-in fade-in-0 duration-500">
             <Button
               variant="outline"
