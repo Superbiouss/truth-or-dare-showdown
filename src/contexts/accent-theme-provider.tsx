@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState, useMemo } from 'react';
 
 type Theme = 'violet' | 'zinc' | 'rose' | 'blue' | 'green' | 'orange';
 
@@ -12,22 +12,28 @@ type AccentThemeContextType = {
 const AccentThemeContext = createContext<AccentThemeContextType | undefined>(undefined);
 
 export function AccentThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('violet');
+  const [theme, setTheme] = useState<Theme>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('color-theme') as Theme | null) || 'violet';
+    }
+    return 'violet';
+  });
 
   useEffect(() => {
-    const storedTheme = localStorage.getItem('color-theme') as Theme | null;
-    // Set the theme from local storage or default to 'violet'
-    handleSetTheme(storedTheme || 'violet');
-  }, []);
+    document.documentElement.setAttribute('data-color-scheme', theme);
+  }, [theme]);
 
   const handleSetTheme = (newTheme: Theme) => {
     setTheme(newTheme);
-    localStorage.setItem('color-theme', newTheme);
-    document.documentElement.setAttribute('data-color-scheme', newTheme);
+    if (typeof window !== 'undefined') {
+        localStorage.setItem('color-theme', newTheme);
+    }
   };
   
+  const value = useMemo(() => ({ theme, setTheme: handleSetTheme }), [theme]);
+
   return (
-    <AccentThemeContext.Provider value={{ theme, setTheme: handleSetTheme }}>
+    <AccentThemeContext.Provider value={value}>
       {children}
     </AccentThemeContext.Provider>
   );

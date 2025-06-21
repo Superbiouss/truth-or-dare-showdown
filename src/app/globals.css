@@ -4,48 +4,72 @@
 
 @layer base {
   :root {
-    --background: 265 83% 92%;
-    --foreground: 285 20% 20%;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
     --card: 0 0% 100%;
-    --card-foreground: 285 20% 20%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 285 20% 20%;
-    --primary: 285 87% 53%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 285 87% 53%; /* Default: Violet */
     --primary-foreground: 285 100% 98%;
-    --secondary: 265 83% 95%;
-    --secondary-foreground: 285 87% 53%;
-    --muted: 265 83% 95%;
-    --muted-foreground: 285 10% 45%;
-    --accent: 183 100% 74%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 183 100% 74%; /* Default: Electric Blue */
     --accent-foreground: 183 50% 10%;
-    --destructive: 0 84% 60%;
+    --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 265 20% 85%;
-    --input: 265 20% 85%;
-    --ring: 285 87% 53%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
     --radius: 0.5rem;
   }
- 
-  .dark {
-    --background: 265 40% 15%;
-    --foreground: 265 80% 90%;
-    --card: 265 40% 18%;
-    --card-foreground: 265 80% 90%;
-    --popover: 265 40% 18%;
-    --popover-foreground: 265 80% 90%;
+
+  [data-color-scheme="zinc"] {
+    --primary: 240 5.2% 33.9%;
+    --primary-foreground: 240 6% 94%;
+  }
+  [data-color-scheme="rose"] {
+    --primary: 346.8 77.2% 49.8%;
+    --primary-foreground: 355.7 100% 97.3%;
+  }
+  [data-color-scheme="blue"] {
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+  }
+  [data-color-scheme="green"] {
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 144.9 80.4% 97.3%;
+  }
+  [data-color-scheme="orange"] {
+    --primary: 24.6 95% 53.1%;
+    --primary-foreground: 20 14.3% 97.3%;
+  }
+  /* Keep the original purple as the default */
+  [data-color-scheme="violet"] {
     --primary: 285 87% 53%;
     --primary-foreground: 285 100% 98%;
-    --secondary: 265 40% 25%;
-    --secondary-foreground: 265 80% 90%;
-    --muted: 265 40% 25%;
-    --muted-foreground: 265 20% 65%;
-    --accent: 183 100% 74%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 183 100% 74%; /* Electric Blue */
     --accent-foreground: 183 50% 10%;
-    --destructive: 0 63% 31%;
+    --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
-    --border: 265 40% 25%;
-    --input: 265 40% 25%;
-    --ring: 285 87% 53%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 240 4.9% 83.9%;
   }
 }
 

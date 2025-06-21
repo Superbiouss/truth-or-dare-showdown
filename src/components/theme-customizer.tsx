@@ -8,11 +8,11 @@ import { cn } from '@/lib/utils';
 
 const themes = [
   { name: 'violet', color: 'hsl(285 87% 53%)' },
-  { name: 'zinc', color: 'hsl(240 5% 65%)' },
-  { name: 'rose', color: 'hsl(347 77% 50%)' },
-  { name: 'blue', color: 'hsl(221 83% 53%)' },
-  { name: 'green', color: 'hsl(142 76% 36%)' },
-  { name: 'orange', color: 'hsl(25 95% 53%)' },
+  { name: 'zinc', color: 'hsl(240 5.2% 33.9%)' },
+  { name: 'rose', color: 'hsl(346.8 77.2% 49.8%)' },
+  { name: 'blue', color: 'hsl(221.2 83.2% 53.3%)' },
+  { name: 'green', color: 'hsl(142.1 76.2% 36.3%)' },
+  { name: 'orange', color: 'hsl(24.6 95% 53.1%)' },
 ] as const;
 
 export function ThemeCustomizer() {
