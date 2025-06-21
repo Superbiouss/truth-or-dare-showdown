@@ -12,22 +12,17 @@ type AccentThemeContextType = {
 const AccentThemeContext = createContext<AccentThemeContextType | undefined>(undefined);
 
 export function AccentThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window !== 'undefined') {
-      return (localStorage.getItem('color-theme') as Theme | null) || 'zinc';
-    }
-    return 'zinc';
-  });
+  // Always default to 'zinc' on initial load and ignore localStorage.
+  const [theme, setTheme] = useState<Theme>('zinc');
 
   useEffect(() => {
+    // Apply the data-color-scheme attribute to the root element.
     document.documentElement.setAttribute('data-color-scheme', theme);
   }, [theme]);
 
+  // The setTheme function no longer saves to localStorage.
   const handleSetTheme = (newTheme: Theme) => {
     setTheme(newTheme);
-    if (typeof window !== 'undefined') {
-        localStorage.setItem('color-theme', newTheme);
-    }
   };
   
   const value = useMemo(() => ({ theme, setTheme: handleSetTheme }), [theme]);
