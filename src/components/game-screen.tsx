@@ -27,12 +27,19 @@ interface GameScreenProps {
   setIsTtsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+type PrefetchedPrompts = {
+  truth: Prompt | null;
+  dare: Prompt | null;
+  wildcard: Prompt | null;
+};
+
 export function GameScreen({ players, currentPlayer, category, intensity, onTurnComplete, onEndGame, rounds, currentRound, isTtsEnabled, setIsTtsEnabled }: GameScreenProps) {
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [turnInProgress, setTurnInProgress] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [generatedPrompts, setGeneratedPrompts] = useState<string[]>([]);
-  
+  const [prefetchedPrompts, setPrefetchedPrompts] = useState<PrefetchedPrompts>({ truth: null, dare: null, wildcard: null });
+
   // Timer state
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const [isTimerRunning, setIsTimerRunning] = useState(false);
@@ -70,6 +77,55 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     }
   }, []);
 
+  // Pre-fetch all prompts when the turn starts
+  useEffect(() => {
+    const prefetchPrompts = async () => {
+      // Reset state for the new turn and show loader
+      setIsLoading(true);
+      setTurnInProgress(false);
+      setPrompt(null);
+      setPrefetchedPrompts({ truth: null, dare: null, wildcard: null });
+
+      try {
+        const otherPlayers = players
+          .filter(p => p.id !== currentPlayer.id)
+          .map(({name, gender}) => ({name, gender}));
+        
+        const commonInput = {
+            player: { name: currentPlayer.name, gender: currentPlayer.gender },
+            category,
+            intensity,
+            players: otherPlayers,
+            previousPrompts: generatedPrompts.slice(-50), // Send more history to AI
+        };
+
+        // Fetch all three prompts in parallel
+        const [truthResult, dareResult, wildcardResult] = await Promise.all([
+          generatePrompt({ ...commonInput, promptType: 'truth' }),
+          generatePrompt({ ...commonInput, promptType: 'dare' }),
+          generateWildcard({ player: commonInput.player, category, intensity, players: commonInput.players, previousPrompts: commonInput.previousPrompts }),
+        ]);
+
+        const newPrefetchedPrompts = {
+          truth: { type: 'truth' as const, text: truthResult.prompt, points: 5, timerInSeconds: truthResult.timerInSeconds },
+          dare: { type: 'dare' as const, text: dareResult.prompt, points: 10, timerInSeconds: dareResult.timerInSeconds },
+          wildcard: { type: 'wildcard' as const, text: wildcardResult.challenge, points: wildcardResult.points, timerInSeconds: wildcardResult.timerInSeconds },
+        };
+        
+        setPrefetchedPrompts(newPrefetchedPrompts);
+
+      } catch (e) {
+        console.error(e);
+        toast({ title: "Oh no!", description: "The AI is having trouble coming up with ideas. Please try again later.", variant: "destructive" });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    prefetchPrompts();
+    // This effect runs only when a new player's turn starts.
+  }, [currentPlayer.id, players, category, intensity, toast]);
+
   const speak = (text: string, gender: 'male' | 'female') => {
     if (!isTtsEnabled || typeof window === 'undefined' || !window.speechSynthesis || voices.length === 0) {
         return;
@@ -95,77 +151,21 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     
     window.speechSynthesis.speak(utterance);
   }
+  
+  const handlePromptSelection = (selectedPrompt: Prompt | null) => {
+    if (!selectedPrompt) return;
 
-  const getTruthOrDare = async (type: 'truth' | 'dare') => {
     triggerVibration();
-    setIsLoading(true);
-    try {
-        const otherPlayers = players
-          .filter(p => p.id !== currentPlayer.id)
-          .map(({name, gender}) => ({name, gender}));
-
-        const result = await generatePrompt({
-            player: { name: currentPlayer.name, gender: currentPlayer.gender },
-            category,
-            intensity,
-            promptType: type,
-            players: otherPlayers,
-            previousPrompts: generatedPrompts.slice(-25),
-        });
-        
-        const promptText = result.prompt;
-        const points = type === 'truth' ? 5 : 10;
-        
-        speak(promptText, currentPlayer.gender);
-        
-        setPrompt({ type, text: promptText, points, timerInSeconds: result.timerInSeconds });
-        if (result.timerInSeconds) {
-            setTimeLeft(result.timerInSeconds);
-        }
-        setGeneratedPrompts(prev => [...prev, promptText]);
-        setTurnInProgress(true);
-    } catch (e) {
-        console.error(e);
-        toast({ title: "Oh no!", description: "The AI is sleeping on the job. Please try again.", variant: "destructive" });
-    } finally {
-        setIsLoading(false);
+    speak(selectedPrompt.text, currentPlayer.gender);
+    setPrompt(selectedPrompt);
+    
+    if (selectedPrompt.timerInSeconds) {
+        setTimeLeft(selectedPrompt.timerInSeconds);
     }
+    
+    setTurnInProgress(true);
   };
   
-  const getWildcard = async () => {
-    triggerVibration();
-    setIsLoading(true);
-    try {
-        const otherPlayers = players
-          .filter(p => p.id !== currentPlayer.id)
-          .map(({name, gender}) => ({name, gender}));
-        
-        const result = await generateWildcard({
-            player: { name: currentPlayer.name, gender: currentPlayer.gender },
-            category,
-            intensity,
-            players: otherPlayers,
-            previousPrompts: generatedPrompts.slice(-25),
-        });
-
-        const challengeText = result.challenge;
-
-        speak(challengeText, currentPlayer.gender);
-
-        setPrompt({ type: 'wildcard', text: challengeText, points: result.points, timerInSeconds: result.timerInSeconds });
-        if (result.timerInSeconds) {
-            setTimeLeft(result.timerInSeconds);
-        }
-        setGeneratedPrompts(prev => [...prev, challengeText]);
-        setTurnInProgress(true);
-    } catch (e) {
-        console.error(e);
-        toast({ title: "Oh no!", description: "The AI is sleeping on the job. Please try again.", variant: "destructive" });
-    } finally {
-        setIsLoading(false);
-    }
-  };
-
   const clearTurnState = () => {
     setPrompt(null);
     if (typeof window !== 'undefined' && window.speechSynthesis) {
@@ -184,6 +184,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     triggerVibration();
     if (prompt) {
       onTurnComplete(prompt.points);
+      setGeneratedPrompts(prev => [...prev, prompt.text]); // Add used prompt to history
     }
     clearTurnState();
   };
@@ -192,6 +193,9 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     triggerVibration();
     const penalty = -5;
     onTurnComplete(penalty);
+     if (prompt) {
+        setGeneratedPrompts(prev => [...prev, prompt.text]); // Also add skipped prompt to history
+     }
     toast({
         title: "Task Skipped",
         description: `You lost 5 points.`,
@@ -263,29 +267,27 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                 </div>
             </CardHeader>
             <CardContent className="min-h-[250px] flex flex-col items-center justify-center p-6 space-y-6">
-                {!turnInProgress ? (
-                  isLoading ? (
+                {isLoading ? (
                     <div className="flex flex-col items-center justify-center min-h-[176px] gap-4">
                         <Loader2 className="w-12 h-12 animate-spin text-primary" />
                         <p className="text-muted-foreground">The AI is thinking...</p>
                     </div>
-                  ) : (
+                ) : !turnInProgress ? (
                     <div className="flex flex-col sm:flex-row gap-4 w-full justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <Button onClick={() => getTruthOrDare('truth')} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.truth)} disabled={!prefetchedPrompts.truth} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
                             <Icons.Truth className="w-8 h-8"/>
                             Truth
                         </Button>
-                        <Button onClick={getWildcard} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600">
+                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.wildcard)} disabled={!prefetchedPrompts.wildcard} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600">
                             <Icons.Wildcard className="w-8 h-8"/>
                             Wildcard
                         </Button>
-                        <Button onClick={() => getTruthOrDare('dare')} variant="destructive" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.dare)} disabled={!prefetchedPrompts.dare} variant="destructive" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
                             <Icons.Dare className="w-8 h-8" />
                             Dare
                         </Button>
                     </div>
-                  )
-                ) : (
+                  ) : (
                     <div className="space-y-4 text-center animate-in fade-in zoom-in-95 duration-500 w-full">
                         <h3 className="text-xl font-semibold capitalize text-primary">{prompt?.type}</h3>
                         <p className="text-2xl font-medium">{prompt?.text}</p>
