@@ -8,7 +8,6 @@ import { Icons, AvatarIconKey } from "@/components/icons";
 import { triggerVibration, playTick, playTimesUp } from "@/lib/utils";
 import { generatePrompt } from "@/ai/flows/generatePromptFlow";
 import { generateWildcard } from "@/ai/flows/generateWildcardFlow";
-import { generateSpeech } from "@/ai/flows/generateSpeechFlow";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +38,9 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const audioPlayerRef = useRef<HTMLAudioElement>(null);
+
+  // Web Speech API state
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   
   const { toast } = useToast();
 
@@ -48,20 +49,62 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     if (typeof window !== 'undefined') {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
+    // Load voices for Web Speech API
+    const loadVoices = () => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            const availableVoices = window.speechSynthesis.getVoices();
+            if (availableVoices.length > 0) {
+                setVoices(availableVoices);
+            }
+        }
+    };
+    loadVoices();
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+    return () => {
+        if (typeof window !== 'undefined' && window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.onvoiceschanged = null;
+        }
+    }
   }, []);
+
+  const speak = (text: string, gender: 'male' | 'female') => {
+    if (!isTtsEnabled || typeof window === 'undefined' || !window.speechSynthesis || voices.length === 0) {
+        return;
+    }
+    
+    window.speechSynthesis.cancel(); // Stop any previous speech
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    let selectedVoice = null;
+    // We want the opposite gender voice for the announcer
+    if (gender === 'female') { // Find a male voice
+        selectedVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google US English')) || 
+                        voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('male'));
+    } else { // Find a female voice
+        selectedVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google UK English Female')) ||
+                        voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female'));
+    }
+
+    utterance.voice = selectedVoice || voices.find(v => v.default && v.lang.startsWith('en')) || voices[0];
+    utterance.rate = 0.95;
+    utterance.pitch = 1.0;
+    
+    window.speechSynthesis.speak(utterance);
+  }
 
   const getTruthOrDare = async (type: 'truth' | 'dare') => {
     triggerVibration();
-    if (audioContextRef.current && audioContextRef.current.state === "suspended") {
-      audioContextRef.current.resume();
-    }
     setIsLoading(true);
     try {
         const otherPlayers = players
           .filter(p => p.id !== currentPlayer.id)
           .map(({name, gender}) => ({name, gender}));
 
-        const promptPromise = generatePrompt({
+        const result = await generatePrompt({
             player: { name: currentPlayer.name, gender: currentPlayer.gender },
             category,
             intensity,
@@ -69,48 +112,12 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             players: otherPlayers,
             previousPrompts: generatedPrompts.slice(-25),
         });
-
-        let speechPromise = null;
-        if (isTtsEnabled) {
-          speechPromise = promptPromise.then(result =>
-            generateSpeech({ text: result.prompt, gender: currentPlayer.gender })
-          ).catch(e => {
-            console.error("TTS generation failed:", e);
-            if (e instanceof Error && (e.message.includes('429') || e.message.includes('quota'))) {
-                toast({
-                    title: "AI Announcer Limit Reached",
-                    description: "The free daily limit for the AI voice has been reached. It will be available again tomorrow.",
-                    variant: "destructive"
-                });
-                setIsTtsEnabled(false);
-            } else {
-                toast({
-                    title: "AI Announcer Error",
-                    description: "Could not generate the voice prompt.",
-                    variant: "destructive"
-                });
-            }
-            return null; // Return null on speech failure
-          });
-        }
-        
-        const [result, speechResult] = await Promise.all([promptPromise, speechPromise]);
         
         const promptText = result.prompt;
         const points = type === 'truth' ? 5 : 10;
         
-        if (isTtsEnabled && speechResult && audioPlayerRef.current) {
-            audioPlayerRef.current.src = speechResult.audioDataUri;
-            audioPlayerRef.current.play().catch(error => {
-                console.error("Audio playback failed:", error);
-                toast({
-                  title: "Audio Error",
-                  description: "Could not play announcer audio. Your browser might be blocking it.",
-                  variant: "destructive"
-                })
-            });
-        }
-
+        speak(promptText, currentPlayer.gender);
+        
         setPrompt({ type, text: promptText, points, timerInSeconds: result.timerInSeconds });
         if (result.timerInSeconds) {
             setTimeLeft(result.timerInSeconds);
@@ -127,62 +134,23 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   
   const getWildcard = async () => {
     triggerVibration();
-    if (audioContextRef.current && audioContextRef.current.state === "suspended") {
-      audioContextRef.current.resume();
-    }
     setIsLoading(true);
     try {
         const otherPlayers = players
           .filter(p => p.id !== currentPlayer.id)
           .map(({name, gender}) => ({name, gender}));
         
-        const wildcardPromise = generateWildcard({
+        const result = await generateWildcard({
             player: { name: currentPlayer.name, gender: currentPlayer.gender },
             category,
             intensity,
             players: otherPlayers,
             previousPrompts: generatedPrompts.slice(-25),
         });
-        
-        let speechPromise = null;
-        if (isTtsEnabled) {
-          speechPromise = wildcardPromise.then(result =>
-            generateSpeech({ text: result.challenge, gender: currentPlayer.gender })
-          ).catch(e => {
-            console.error("TTS generation failed:", e);
-            if (e instanceof Error && (e.message.includes('429') || e.message.includes('quota'))) {
-                toast({
-                    title: "AI Announcer Limit Reached",
-                    description: "The free daily limit for the AI voice has been reached. It will be available again tomorrow.",
-                    variant: "destructive"
-                });
-                setIsTtsEnabled(false);
-            } else {
-                toast({
-                    title: "AI Announcer Error",
-                    description: "Could not generate the voice prompt.",
-                    variant: "destructive"
-                });
-            }
-            return null; // Return null on speech failure
-          });
-        }
-        
-        const [result, speechResult] = await Promise.all([wildcardPromise, speechPromise]);
 
         const challengeText = result.challenge;
 
-        if (isTtsEnabled && speechResult && audioPlayerRef.current) {
-            audioPlayerRef.current.src = speechResult.audioDataUri;
-            audioPlayerRef.current.play().catch(error => {
-                console.error("Audio playback failed:", error);
-                toast({
-                  title: "Audio Error",
-                  description: "Could not play announcer audio. Your browser might be blocking it.",
-                  variant: "destructive"
-                })
-            });
-        }
+        speak(challengeText, currentPlayer.gender);
 
         setPrompt({ type: 'wildcard', text: challengeText, points: result.points, timerInSeconds: result.timerInSeconds });
         if (result.timerInSeconds) {
@@ -200,9 +168,8 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
 
   const clearTurnState = () => {
     setPrompt(null);
-    if (audioPlayerRef.current) {
-      audioPlayerRef.current.pause();
-      audioPlayerRef.current.src = "";
+    if (typeof window !== 'undefined' && window.speechSynthesis) {
+        window.speechSynthesis.cancel();
     }
     setTurnInProgress(false);
     // Clear timer state
@@ -274,7 +241,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
 
   return (
     <div className="w-full max-w-2xl text-center animate-in fade-in-0 duration-500">
-        <audio ref={audioPlayerRef} className="hidden" />
         <Card className="w-full shadow-xl">
             <CardHeader>
                 <div className="flex justify-between items-start">
