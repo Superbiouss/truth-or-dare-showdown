@@ -10,8 +10,8 @@
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 285 87% 53%; /* Default: Violet */
-    --primary-foreground: 285 100% 98%;
+    --primary: 240 5.2% 33.9%; /* Default: Zinc */
+    --primary-foreground: 240 6% 94%;
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
@@ -46,7 +46,6 @@
     --primary: 24.6 95% 53.1%;
     --primary-foreground: 20 14.3% 97.3%;
   }
-  /* Keep the original purple as the default */
   [data-color-scheme="violet"] {
     --primary: 285 87% 53%;
     --primary-foreground: 285 100% 98%;
