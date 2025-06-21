@@ -36,7 +36,7 @@ export async function generateWildcard(input: GenerateWildcardInput): Promise<Ge
   return generateWildcardFlow(input);
 }
 
-const promptTemplate = `You are an AI for a party game. Your primary goal is to generate a single, fun, and unexpected "wildcard" challenge for {{player.name}}.
+const promptTemplate = `You are an AI for a party game. Your primary goal is to generate a single, short (1-2 sentences), fun, and unexpected "wildcard" challenge for {{player.name}}.
 
 **Key Requirement: Make it TRENDY & RELATABLE.**
 To ensure the game feels current and exciting, you MUST base the challenge on recent events or modern themes. Be specific and creative in how you use them. Good sources of inspiration include:
@@ -63,7 +63,7 @@ Do not repeat any of the previous challenges. Focus on being fun and surprising.
 {{/if}}
 `;
 
-const extremeWildcardPromptTemplate = `You are an AI for an adults-only party game. Generate a single, truly extreme, wild, and potentially shocking "wildcard" challenge for {{player.name}}. The intensity is set to the maximum (5/5), so do not hold back.
+const extremeWildcardPromptTemplate = `You are an AI for an adults-only party game. Generate a single, very short (1-2 sentences), truly extreme, wild, and potentially shocking "wildcard" challenge for {{player.name}}. The intensity is set to the maximum (5/5), so do not hold back.
 
 **Key Requirement: Make it TRENDY, RELATABLE, and EDGY.**
 To ensure the game feels current and shocking, you MUST base the challenge on recent events or modern themes, but push them to the limit. Good sources of inspiration include:

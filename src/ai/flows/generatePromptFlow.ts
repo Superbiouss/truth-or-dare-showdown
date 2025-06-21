@@ -37,7 +37,7 @@ export async function generatePrompt(input: GeneratePromptInput): Promise<Genera
   return generatePromptFlow(input);
 }
 
-const promptTemplate = `You are an AI for a Truth or Dare game. Your primary goal is to generate a short, creative, and engaging '{{promptType}}' question for {{player.name}}.
+const promptTemplate = `You are an AI for a Truth or Dare game. Your primary goal is to generate a very short (1-2 sentences), creative, and engaging '{{promptType}}' question for {{player.name}}.
 
 **Key Requirement: Make it TRENDY & RELATABLE.**
 To ensure the game feels current and exciting, you MUST base the prompt on recent events or modern themes. Be specific and creative in how you use them. Good sources of inspiration include:
@@ -64,7 +64,7 @@ Do not repeat any of the previous prompts. Focus on being fun and surprising.
 {{/if}}
 `;
 
-const extremePromptTemplate = `You are an AI for an adults-only Truth or Dare game. The intensity is set to the maximum (5/5). Generate a truly extreme, wild, and potentially shocking '{{promptType}}' question for {{player.name}}. Do not hold back.
+const extremePromptTemplate = `You are an AI for an adults-only Truth or Dare game. The intensity is set to the maximum (5/5). Generate a very short (1-2 sentences), truly extreme, wild, and potentially shocking '{{promptType}}' question for {{player.name}}. Do not hold back.
 
 **Key Requirement: Make it TRENDY, RELATABLE, and EDGY.**
 To ensure the game feels current and shocking, you MUST base the prompt on recent events or modern themes, but push them to the limit. Good sources of inspiration include:
