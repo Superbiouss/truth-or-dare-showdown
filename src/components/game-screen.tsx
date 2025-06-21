@@ -33,7 +33,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   const [turnInProgress, setTurnInProgress] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPrompts, setGeneratedPrompts] = useState<string[]>([]);
-  const [audioUrl, setAudioUrl] = useState<string | null>(null);
   
   // Timer state
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -51,25 +50,12 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     }
   }, []);
 
-  // Effect to handle audio playback reliably
-  useEffect(() => {
-    if (audioUrl && audioPlayerRef.current) {
-      audioPlayerRef.current.src = audioUrl;
-      audioPlayerRef.current.play().catch(error => {
-        console.error("Audio playback failed:", error);
-        toast({
-          title: "Audio Error",
-          description: "Could not play announcer audio. Your browser might be blocking it.",
-          variant: "destructive"
-        })
-      });
-    }
-  }, [audioUrl, toast]);
-
   const getTruthOrDare = async (type: 'truth' | 'dare') => {
     triggerVibration();
+    if (audioContextRef.current && audioContextRef.current.state === "suspended") {
+      audioContextRef.current.resume();
+    }
     setIsLoading(true);
-    setAudioUrl(null);
     try {
         const otherPlayers = players
           .filter(p => p.id !== currentPlayer.id)
@@ -93,7 +79,17 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                     text: promptText,
                     gender: currentPlayer.gender,
                 });
-                setAudioUrl(speechResult.audioDataUri);
+                if (audioPlayerRef.current) {
+                    audioPlayerRef.current.src = speechResult.audioDataUri;
+                    audioPlayerRef.current.play().catch(error => {
+                        console.error("Audio playback failed:", error);
+                        toast({
+                          title: "Audio Error",
+                          description: "Could not play announcer audio. Your browser might be blocking it.",
+                          variant: "destructive"
+                        })
+                    });
+                }
             } catch (e) {
                 console.error("TTS generation failed:", e);
             }
@@ -115,8 +111,10 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   
   const getWildcard = async () => {
     triggerVibration();
+    if (audioContextRef.current && audioContextRef.current.state === "suspended") {
+      audioContextRef.current.resume();
+    }
     setIsLoading(true);
-    setAudioUrl(null);
     try {
         const otherPlayers = players
           .filter(p => p.id !== currentPlayer.id)
@@ -138,7 +136,17 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                     text: challengeText,
                     gender: currentPlayer.gender,
                 });
-                setAudioUrl(speechResult.audioDataUri);
+                if (audioPlayerRef.current) {
+                    audioPlayerRef.current.src = speechResult.audioDataUri;
+                    audioPlayerRef.current.play().catch(error => {
+                        console.error("Audio playback failed:", error);
+                        toast({
+                          title: "Audio Error",
+                          description: "Could not play announcer audio. Your browser might be blocking it.",
+                          variant: "destructive"
+                        })
+                    });
+                }
             } catch (e) {
                 console.error("TTS generation failed:", e);
             }
@@ -160,7 +168,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
 
   const clearTurnState = () => {
     setPrompt(null);
-    setAudioUrl(null);
     if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
       audioPlayerRef.current.src = "";
