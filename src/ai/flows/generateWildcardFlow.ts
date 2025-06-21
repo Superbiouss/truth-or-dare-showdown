@@ -9,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import type { SafetySetting } from '@genkit-ai/googleai';
 
 const PlayerPromptSchema = z.object({
     name: z.string(),
@@ -35,11 +36,7 @@ export async function generateWildcard(input: GenerateWildcardInput): Promise<Ge
   return generateWildcardFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateWildcardPrompt',
-  input: { schema: GenerateWildcardInputSchema },
-  output: { schema: GenerateWildcardOutputSchema },
-  prompt: `You are an AI for a party game. Generate a single, fun, and unexpected "wildcard" challenge for {{player.name}}.
+const promptTemplate = `You are an AI for a party game. Generate a single, fun, and unexpected "wildcard" challenge for {{player.name}}.
 
 The challenge must be appropriate for the '{{category}}' category. Award between 15 and 30 points based on difficulty.
 
@@ -58,8 +55,64 @@ Do not repeat any of the previous challenges.
     -   "{{this}}"
     {{/each}}
 {{/if}}
-`,
+`;
+
+const getSafetySettingsForCategory = (category: 'kids' | 'teens' | '18+'): SafetySetting[] => {
+    switch (category) {
+        case 'kids':
+            return [
+                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+            ];
+        case 'teens':
+             return [
+                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+            ];
+        case '18+':
+            return [
+                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+            ];
+    }
+}
+
+const kidsPrompt = ai.definePrompt({
+  name: 'generateKidsWildcardPrompt',
+  input: { schema: GenerateWildcardInputSchema },
+  output: { schema: GenerateWildcardOutputSchema },
+  prompt: promptTemplate,
+  config: {
+    safetySettings: getSafetySettingsForCategory('kids'),
+  }
 });
+
+const teensPrompt = ai.definePrompt({
+  name: 'generateTeensWildcardPrompt',
+  input: { schema: GenerateWildcardInputSchema },
+  output: { schema: GenerateWildcardOutputSchema },
+  prompt: promptTemplate,
+  config: {
+    safetySettings: getSafetySettingsForCategory('teens'),
+  }
+});
+
+const adultPrompt = ai.definePrompt({
+  name: 'generateAdultWildcardPrompt',
+  input: { schema: GenerateWildcardInputSchema },
+  output: { schema: GenerateWildcardOutputSchema },
+  prompt: promptTemplate,
+  config: {
+    safetySettings: getSafetySettingsForCategory('18+'),
+  }
+});
+
 
 const generateWildcardFlow = ai.defineFlow(
   {
@@ -68,7 +121,22 @@ const generateWildcardFlow = ai.defineFlow(
     outputSchema: GenerateWildcardOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    let selectedPrompt;
+    switch (input.category) {
+        case 'kids':
+            selectedPrompt = kidsPrompt;
+            break;
+        case 'teens':
+            selectedPrompt = teensPrompt;
+            break;
+        case '18+':
+            selectedPrompt = adultPrompt;
+            break;
+        default:
+            selectedPrompt = kidsPrompt;
+    }
+    
+    const { output } = await selectedPrompt(input);
 
     // Post-processing to ensure timer is only present when needed.
     if (output) {

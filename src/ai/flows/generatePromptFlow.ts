@@ -9,6 +9,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'zod';
+import type { SafetySetting } from '@genkit-ai/googleai';
 
 const PlayerPromptSchema = z.object({
     name: z.string(),
@@ -36,11 +37,7 @@ export async function generatePrompt(input: GeneratePromptInput): Promise<Genera
   return generatePromptFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generatePrompt',
-  input: { schema: GeneratePromptInputSchema },
-  output: { schema: GeneratePromptOutputSchema },
-  prompt: `You are an AI for a Truth or Dare game. Generate a short and creative '{{promptType}}' question for {{player.name}}.
+const promptTemplate = `You are an AI for a Truth or Dare game. Generate a short and creative '{{promptType}}' question for {{player.name}}.
 
 The question must be appropriate for the '{{category}}' category.
 
@@ -59,7 +56,62 @@ Do not repeat any of the previous prompts. Focus on being fun and surprising.
     -   "{{this}}"
     {{/each}}
 {{/if}}
-`,
+`;
+
+const getSafetySettingsForCategory = (category: 'kids' | 'teens' | '18+'): SafetySetting[] => {
+    switch (category) {
+        case 'kids':
+            return [
+                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+            ];
+        case 'teens':
+             return [
+                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_ONLY_HIGH' },
+                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_ONLY_HIGH' },
+                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_MEDIUM_AND_ABOVE' },
+            ];
+        case '18+':
+            return [
+                { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_ONLY_HIGH' },
+                { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+                { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+                { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_ONLY_HIGH' },
+            ];
+    }
+}
+
+const kidsPrompt = ai.definePrompt({
+  name: 'generateKidsPrompt',
+  input: { schema: GeneratePromptInputSchema },
+  output: { schema: GeneratePromptOutputSchema },
+  prompt: promptTemplate,
+  config: {
+    safetySettings: getSafetySettingsForCategory('kids'),
+  }
+});
+
+const teensPrompt = ai.definePrompt({
+  name: 'generateTeensPrompt',
+  input: { schema: GeneratePromptInputSchema },
+  output: { schema: GeneratePromptOutputSchema },
+  prompt: promptTemplate,
+  config: {
+    safetySettings: getSafetySettingsForCategory('teens'),
+  }
+});
+
+const adultPrompt = ai.definePrompt({
+  name: 'generateAdultPrompt',
+  input: { schema: GeneratePromptInputSchema },
+  output: { schema: GeneratePromptOutputSchema },
+  prompt: promptTemplate,
+  config: {
+    safetySettings: getSafetySettingsForCategory('18+'),
+  }
 });
 
 const generatePromptFlow = ai.defineFlow(
@@ -69,7 +121,22 @@ const generatePromptFlow = ai.defineFlow(
     outputSchema: GeneratePromptOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt(input);
+    let selectedPrompt;
+    switch (input.category) {
+        case 'kids':
+            selectedPrompt = kidsPrompt;
+            break;
+        case 'teens':
+            selectedPrompt = teensPrompt;
+            break;
+        case '18+':
+            selectedPrompt = adultPrompt;
+            break;
+        default:
+            selectedPrompt = kidsPrompt;
+    }
+    
+    const { output } = await selectedPrompt(input);
     
     // Post-processing to ensure timer is only present when needed.
     if (output) {

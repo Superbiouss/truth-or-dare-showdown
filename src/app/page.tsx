@@ -1,137 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import type { Player, GameCategory, Screen, GameResult } from "@/lib/types";
+import { useGame } from "@/hooks/use-game";
 import { PlayerSetup } from "@/components/player-setup";
 import { CategorySelection } from "@/components/category-selection";
 import { GameScreen } from "@/components/game-screen";
 import { Leaderboard } from "@/components/leaderboard";
 import { GameHistory } from "@/components/game-history";
 import { Icons } from "@/components/icons";
-import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
-  const [screen, setScreen] = useState<Screen>('player-setup');
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [category, setCategory] = useState<GameCategory>('kids');
-  const [intensity, setIntensity] = useState(1);
-  const [rounds, setRounds] = useState(5);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
-  const [isTtsEnabled, setIsTtsEnabled] = useState(true);
-  const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
-  const [isSuddenDeath, setIsSuddenDeath] = useState(false);
-  const { toast } = useToast();
-
-  useEffect(() => {
-    try {
-      const storedHistory = localStorage.getItem('gameHistory');
-      if (storedHistory) {
-        setGameHistory(JSON.parse(storedHistory));
-      }
-    } catch (error) {
-      console.error("Failed to parse game history from localStorage", error);
-      setGameHistory([]);
-    }
-  }, []);
-
-  const handleStartGame = (newPlayers: Player[]) => {
-    setPlayers(newPlayers);
-    setScreen('category-selection');
-  };
-
-  const handleCategorySelect = (selectedCategory: GameCategory, selectedIntensity: number, selectedRounds: number, ttsEnabled: boolean) => {
-    setCategory(selectedCategory);
-    setIntensity(selectedIntensity);
-    setRounds(selectedRounds);
-    setIsTtsEnabled(ttsEnabled);
-    setCurrentRound(1);
-    setCurrentPlayerIndex(0);
-    setScreen('game');
-  };
-
-  const handleTurnComplete = (points: number) => {
-    const currentPlayerId = players[currentPlayerIndex].id;
-    const updatedPlayers = players.map(p =>
-      p.id === currentPlayerId ? { ...p, score: p.score + points } : p
-    );
-    setPlayers(updatedPlayers);
-
-    const isRoundOver = (currentPlayerIndex + 1) >= players.length;
-
-    if (isRoundOver) {
-      const isFinalRound = currentRound >= rounds;
-      if (isFinalRound) {
-        const sortedPlayers = [...updatedPlayers].sort((a, b) => b.score - a.score);
-        const topScore = sortedPlayers[0].score;
-        const potentialWinners = sortedPlayers.filter(p => p.score === topScore && p.score > 0);
-
-        if (potentialWinners.length > 1) {
-          // It's a tie, enter or continue Sudden Death
-          const tiedPlayerNames = potentialWinners.map(p => p.name).join(' and ');
-          toast({
-            title: "Sudden Death!",
-            description: `A tie between ${tiedPlayerNames}! One more round to decide the champion.`,
-          });
-          
-          setPlayers(potentialWinners); // Only tied players continue
-          setRounds(prev => prev + 1); // Add one more round
-          setCurrentRound(prev => prev + 1);
-          setCurrentPlayerIndex(0);
-          setIsSuddenDeath(true);
-        } else {
-          // We have a clear winner or everyone has 0 points
-          handleEndGame(updatedPlayers);
-        }
-      } else {
-        // Not the final round, start next round
-        setCurrentRound(prev => prev + 1);
-        setCurrentPlayerIndex(0);
-      }
-    } else {
-      // Not the end of the round, move to next player
-      setCurrentPlayerIndex(prevIndex => prevIndex + 1);
-    }
-  };
-
-  const handleEndGame = (finalPlayers: Player[] = players) => {
-    const sortedPlayers = [...finalPlayers].sort((a, b) => b.score - a.score);
-    const winner = sortedPlayers[0];
-    const newGameResult: GameResult = {
-      id: Date.now(),
-      date: new Date().toLocaleDateString(),
-      players: finalPlayers.map(({ name, score, avatar }) => ({ name, score, avatar })),
-      winnerName: winner && winner.score > 0 ? winner.name : "No one",
-    };
-
-    const updatedHistory = [newGameResult, ...gameHistory].slice(0, 20); // Keep last 20 games
-    setGameHistory(updatedHistory);
-    try {
-        localStorage.setItem('gameHistory', JSON.stringify(updatedHistory));
-    } catch (error) {
-        console.error("Failed to save game history to localStorage", error);
-    }
-    setScreen('leaderboard');
-  };
-
-  const handlePlayAgain = () => {
-    setPlayers([]);
-    setCategory('kids');
-    setIntensity(1);
-    setRounds(5);
-    setCurrentRound(1);
-    setCurrentPlayerIndex(0);
-    setIsSuddenDeath(false);
-    setScreen('player-setup');
-  };
-  
-  const handleShowHistory = () => {
-    setScreen('history');
-  };
-
-  const handleBackToSetup = () => {
-    setScreen('player-setup');
-  };
+  const {
+    screen,
+    players,
+    category,
+    intensity,
+    rounds,
+    currentRound,
+    currentPlayer,
+    isTtsEnabled,
+    gameHistory,
+    isSuddenDeath,
+    handleStartGame,
+    handleCategorySelect,
+    handleTurnComplete,
+    handleEndGame,
+    handlePlayAgain,
+    handleShowHistory,
+    handleBackToSetup,
+    setIsTtsEnabled,
+  } = useGame();
 
   const renderScreen = () => {
     switch (screen) {
@@ -143,7 +40,7 @@ export default function Home() {
         return (
           <GameScreen
             players={players}
-            currentPlayer={players[currentPlayerIndex]}
+            currentPlayer={currentPlayer!}
             category={category}
             intensity={intensity}
             onTurnComplete={handleTurnComplete}
