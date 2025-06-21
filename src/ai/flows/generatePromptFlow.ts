@@ -40,19 +40,26 @@ const prompt = ai.definePrompt({
   name: 'generatePrompt',
   input: { schema: GeneratePromptInputSchema.extend({ isAdult: z.boolean() }) },
   output: { schema: GeneratePromptOutputSchema },
-  prompt: `Your sole task is to generate a single JSON object for a "{{promptType}}" question in a party game.
-Adhere strictly to the following Zod schema for your output.
+  prompt: `You are an AI assistant that ONLY responds with a single, valid JSON object that strictly adheres to the Zod schema provided below. Do not include any other text, markdown, or explanations.
 
-\`{
+**Zod Schema:**
+\`\`\`json
+{
   "prompt": "z.string() // The generated truth or dare question.",
-  "timerInSeconds": "z.number().optional() // OMIT this field unless the task has a specific time limit."
-}\`
+  "timerInSeconds": "z.number().optional() // IMPORTANT: OMIT this field entirely unless the task has a very specific, explicit time limit."
+}
+\`\`\`
 
 **CRITICAL RULES:**
-1.  **JSON ONLY:** Your entire response MUST be a single, valid JSON object. Do not include any text, markdown, or any other characters before or after the JSON.
-2.  **TIMER:** Only include the \`timerInSeconds\` field if the task has an explicit, specific duration (e.g., "stare for 30 seconds"). For all other prompts, you MUST OMIT this field from the JSON.
-3.  **NO REPEATS:** Do not generate any of the prompts from the \`previousPrompts\` list.
+1.  **JSON ONLY:** Your entire response MUST be a single, valid JSON object and nothing else.
+2.  **NO TIMER BY DEFAULT:** OMIT the \`timerInSeconds\` field unless the dare requires a specific time duration (e.g., "hold your breath for 20 seconds").
+3.  **NO REPEATS:** Do not generate any prompts from the \`previousPrompts\` list.
 4.  **BE CREATIVE:** The prompt should be witty, surprising, and short.
+
+**GOOD EXAMPLES:**
+- For a 'truth' prompt: \`{"prompt": "What's the most embarrassing thing you've worn in public?"}\`
+- For a 'dare' prompt: \`{"prompt": "Do your best impersonation of another player until your next turn."}\`
+- For a timed 'dare' prompt: \`{"prompt": "Hold a plank for 30 seconds.", "timerInSeconds": 30}\`
 
 **GAME CONTEXT:**
 -   **Prompt Type:** {{promptType}}

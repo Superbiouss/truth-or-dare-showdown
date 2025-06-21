@@ -39,21 +39,28 @@ const prompt = ai.definePrompt({
   name: 'generateWildcardPrompt',
   input: { schema: GenerateWildcardInputSchema.extend({ isAdult: z.boolean() }) },
   output: { schema: GenerateWildcardOutputSchema },
-  prompt: `Your sole task is to generate a single JSON object for a "Wildcard" challenge in a party game.
-Adhere strictly to the following Zod schema for your output.
+  prompt: `You are an AI assistant that ONLY responds with a single, valid JSON object that strictly adheres to the Zod schema provided below. Do not include any other text, markdown, or explanations.
 
-\`{
+**Zod Schema:**
+\`\`\`json
+{
   "challenge": "z.string() // The creative wildcard challenge.",
   "points": "z.number().int().min(15).max(30) // Points for completion.",
-  "timerInSeconds": "z.number().optional() // OMIT this field unless the task has a specific time limit."
-}\`
+  "timerInSeconds": "z.number().optional() // IMPORTANT: OMIT this field unless the task has a specific time limit."
+}
+\`\`\`
 
 **CRITICAL RULES:**
-1.  **JSON ONLY:** Your entire response MUST be a single, valid JSON object. Do not include any text, markdown, or any other characters before or after the JSON.
-2.  **TIMER:** Only include the \`timerInSeconds\` field if the task has an explicit, specific duration. For all other challenges, you MUST OMIT this field from the JSON.
-3.  **POINTS:** Award points between 15 and 30 based on the challenge's difficulty.
-4.  **NO REPEATS:** Do not generate any of the challenges from the \`previousPrompts\` list.
-5.  **BE CREATIVE:** Think outside the box. The goal is to surprise the players with something fun and unexpected.
+1.  **JSON ONLY:** Your entire response MUST be a single, valid JSON object and nothing else.
+2.  **NO TIMER BY DEFAULT:** OMIT the \`timerInSeconds\` field unless the challenge requires a specific time duration.
+3.  **POINTS:** Award points between 15 and 30 based on the challenge's difficulty and creativity.
+4.  **NO REPEATS:** Do not generate any challenges from the \`previousPrompts\` list.
+5.  **BE CREATIVE:** Think outside the box. The goal is to surprise players with something fun and unexpected.
+
+**GOOD EXAMPLES:**
+- \`{"challenge": "Invent a new handshake with the player to your left.", "points": 20}\`
+- \`{"challenge": "For the rest of the round, you must speak in a pirate accent.", "points": 25}\`
+- \`{"challenge": "Create a 15-second TikTok dance on the spot.", "points": 20, "timerInSeconds": 15}\`
 
 **GAME CONTEXT:**
 -   **Category:** {{category}}
