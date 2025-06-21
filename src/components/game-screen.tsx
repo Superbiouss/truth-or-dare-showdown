@@ -40,15 +40,31 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
+  const audioPlayerRef = useRef<HTMLAudioElement>(null);
   
   const { toast } = useToast();
 
   useEffect(() => {
-    // Initialize AudioContext on the client after the first user interaction (or mount)
+    // Initialize AudioContext on the client for timer sounds
     if (typeof window !== 'undefined') {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
   }, []);
+
+  // Effect to handle audio playback reliably
+  useEffect(() => {
+    if (audioUrl && audioPlayerRef.current) {
+      audioPlayerRef.current.src = audioUrl;
+      audioPlayerRef.current.play().catch(error => {
+        console.error("Audio playback failed:", error);
+        toast({
+          title: "Audio Error",
+          description: "Could not play announcer audio. Your browser might be blocking it.",
+          variant: "destructive"
+        })
+      });
+    }
+  }, [audioUrl, toast]);
 
   const getTruthOrDare = async (type: 'truth' | 'dare') => {
     triggerVibration();
@@ -70,7 +86,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
 
         const promptText = result.prompt;
         const points = type === 'truth' ? 5 : 10;
-        let finalAudioUrl: string | null = null;
         
         if (isTtsEnabled) {
             try {
@@ -78,7 +93,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                     text: promptText,
                     gender: currentPlayer.gender,
                 });
-                finalAudioUrl = speechResult.audioDataUri;
+                setAudioUrl(speechResult.audioDataUri);
             } catch (e) {
                 console.error("TTS generation failed:", e);
             }
@@ -89,7 +104,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             setTimeLeft(result.timerInSeconds);
         }
         setGeneratedPrompts(prev => [...prev, promptText]);
-        setAudioUrl(finalAudioUrl);
         setTurnInProgress(true);
     } catch (e) {
         console.error(e);
@@ -117,7 +131,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
         });
 
         const challengeText = result.challenge;
-        let finalAudioUrl: string | null = null;
 
         if (isTtsEnabled) {
              try {
@@ -125,7 +138,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                     text: challengeText,
                     gender: currentPlayer.gender,
                 });
-                finalAudioUrl = speechResult.audioDataUri;
+                setAudioUrl(speechResult.audioDataUri);
             } catch (e) {
                 console.error("TTS generation failed:", e);
             }
@@ -136,7 +149,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             setTimeLeft(result.timerInSeconds);
         }
         setGeneratedPrompts(prev => [...prev, challengeText]);
-        setAudioUrl(finalAudioUrl);
         setTurnInProgress(true);
     } catch (e) {
         console.error(e);
@@ -149,6 +161,10 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   const clearTurnState = () => {
     setPrompt(null);
     setAudioUrl(null);
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
+      audioPlayerRef.current.src = "";
+    }
     setTurnInProgress(false);
     // Clear timer state
     setIsTimerRunning(false);
@@ -219,6 +235,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
 
   return (
     <div className="w-full max-w-2xl text-center animate-in fade-in-0 duration-500">
+        <audio ref={audioPlayerRef} className="hidden" />
         <Card className="w-full shadow-xl">
             <CardHeader>
                 <div className="flex justify-between items-start">
@@ -267,7 +284,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                     <div className="space-y-4 text-center animate-in fade-in zoom-in-95 duration-500 w-full">
                         <h3 className="text-xl font-semibold capitalize text-primary">{prompt?.type}</h3>
                         <p className="text-2xl font-medium">{prompt?.text}</p>
-                        {audioUrl && <audio src={audioUrl} autoPlay />}
                         {prompt && (
                            <Badge variant="secondary" className="text-base">+{prompt.points} Points</Badge>
                         )}
