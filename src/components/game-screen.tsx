@@ -44,7 +44,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             intensity,
             promptType: type,
             players: otherPlayers,
-            previousPrompts: generatedPrompts,
+            previousPrompts: generatedPrompts.slice(-25),
         });
 
         const points = type === 'truth' ? 5 : 10;
@@ -72,7 +72,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             category,
             intensity,
             players: otherPlayers,
-            previousPrompts: generatedPrompts,
+            previousPrompts: generatedPrompts.slice(-25),
         });
 
         setPrompt({ type: 'wildcard', text: result.challenge, points: result.points });
@@ -91,6 +91,19 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     if (prompt) {
       onTurnComplete(prompt.points);
     }
+    setPrompt(null);
+    setTurnInProgress(false);
+  };
+  
+  const handleSkip = () => {
+    triggerVibration();
+    const penalty = -5;
+    onTurnComplete(penalty);
+    toast({
+        title: "Task Skipped",
+        description: `You lost 5 points.`,
+        variant: "destructive",
+    });
     setPrompt(null);
     setTurnInProgress(false);
   };
@@ -142,9 +155,14 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                         {prompt && (
                            <Badge variant="secondary" className="text-base">+{prompt.points} Points</Badge>
                         )}
-                        <Button onClick={handleComplete} size="lg" className="mt-4 transition-transform transform-gpu hover:scale-105 active:scale-95">
-                            Completed
-                        </Button>
+                        <div className="flex justify-center items-center gap-4">
+                            <Button onClick={handleSkip} size="lg" variant="outline" className="mt-4 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                                Skip (-5 Pts)
+                            </Button>
+                            <Button onClick={handleComplete} size="lg" className="mt-4 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                                Completed
+                            </Button>
+                        </div>
                     </div>
                 )}
             </CardContent>

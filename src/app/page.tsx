@@ -7,6 +7,7 @@ import { CategorySelection } from "@/components/category-selection";
 import { GameScreen } from "@/components/game-screen";
 import { Leaderboard } from "@/components/leaderboard";
 import { Icons } from "@/components/icons";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [screen, setScreen] = useState<Screen>('player-setup');
@@ -16,6 +17,7 @@ export default function Home() {
   const [rounds, setRounds] = useState(5);
   const [currentRound, setCurrentRound] = useState(1);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const { toast } = useToast();
 
   const handleStartGame = (newPlayers: Player[]) => {
     setPlayers(newPlayers);
@@ -33,16 +35,28 @@ export default function Home() {
 
   const handleTurnComplete = (points: number) => {
     const currentPlayerId = players[currentPlayerIndex].id;
-    setPlayers(prevPlayers =>
-      prevPlayers.map(p =>
-        p.id === currentPlayerId ? { ...p, score: p.score + points } : p
-      )
+    const updatedPlayers = players.map(p =>
+      p.id === currentPlayerId ? { ...p, score: p.score + points } : p
     );
+    setPlayers(updatedPlayers);
 
     const nextPlayerIndex = (currentPlayerIndex + 1);
     if (nextPlayerIndex >= players.length) { // Last player just finished their turn
         if (currentRound >= rounds) {
-            handleEndGame();
+            const sortedPlayers = [...updatedPlayers].sort((a, b) => b.score - a.score);
+            const isTie = sortedPlayers.length > 1 && sortedPlayers[0].score > 0 && sortedPlayers[0].score === sortedPlayers[1].score;
+
+            if (isTie) {
+                toast({
+                    title: "It's a Tie!",
+                    description: "3 tie-breaker rounds have been added to determine the winner.",
+                });
+                setRounds(prev => prev + 3);
+                setCurrentRound(prev => prev + 1);
+                setCurrentPlayerIndex(0);
+            } else {
+                handleEndGame();
+            }
         } else {
             setCurrentRound(prev => prev + 1);
             setCurrentPlayerIndex(0);
