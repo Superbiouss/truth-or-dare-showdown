@@ -27,7 +27,7 @@ export type GeneratePromptInput = z.infer<typeof GeneratePromptInputSchema>;
 
 const GeneratePromptOutputSchema = z.object({
   prompt: z.string().describe('The generated truth or dare question.'),
-  timerInSeconds: z.number().optional().describe("IMPORTANT: OMIT this field entirely unless the task has a very specific, explicit time limit (e.g., 'stare for 30 seconds'). For most prompts, this field should not be present in the JSON."),
+  timerInSeconds: z.number().optional().describe("Include this field only if the task has a specific time limit (e.g., 'stare for 30 seconds'). Omit it otherwise."),
 });
 export type GeneratePromptOutput = z.infer<typeof GeneratePromptOutputSchema>;
 
@@ -40,29 +40,13 @@ const prompt = ai.definePrompt({
   name: 'generatePrompt',
   input: { schema: GeneratePromptInputSchema.extend({ isAdult: z.boolean() }) },
   output: { schema: GeneratePromptOutputSchema },
-  prompt: `You are an AI assistant that ONLY responds with a single, valid JSON object that strictly adheres to the Zod schema provided below. Do not include any other text, markdown, or explanations.
+  prompt: `You are a creative and witty AI for a game of Truth or Dare.
 
-**Zod Schema:**
-\`\`\`json
-{
-  "prompt": "z.string() // The generated truth or dare question.",
-  "timerInSeconds": "z.number().optional() // IMPORTANT: OMIT this field entirely unless the task has a very specific, explicit time limit."
-}
-\`\`\`
+Generate a single, fun, and engaging '{{promptType}}' question for {{player.name}}.
 
-**CRITICAL RULES:**
-1.  **JSON ONLY:** Your entire response MUST be a single, valid JSON object and nothing else.
-2.  **NO TIMER BY DEFAULT:** OMIT the \`timerInSeconds\` field unless the dare requires a specific time duration (e.g., "hold your breath for 20 seconds").
-3.  **NO REPEATS:** Do not generate any prompts from the \`previousPrompts\` list.
-4.  **BE CREATIVE:** The prompt should be witty, surprising, and short.
+The question should be short and surprising. If the dare requires a specific time limit (e.g., "stare at the wall for 30 seconds"), include a \`timerInSeconds\` value. Otherwise, do not include it.
 
-**GOOD EXAMPLES:**
-- For a 'truth' prompt: \`{"prompt": "What's the most embarrassing thing you've worn in public?"}\`
-- For a 'dare' prompt: \`{"prompt": "Do your best impersonation of another player until your next turn."}\`
-- For a timed 'dare' prompt: \`{"prompt": "Hold a plank for 30 seconds.", "timerInSeconds": 30}\`
-
-**GAME CONTEXT:**
--   **Prompt Type:** {{promptType}}
+**Game Details:**
 -   **Category:** {{category}}
 {{#if isAdult}}-   **Intensity Level (1=tame, 5=wild):** {{intensity}}{{/if}}
 -   **Current Player:** {{player.name}} ({{player.gender}})
@@ -71,13 +55,12 @@ const prompt = ai.definePrompt({
     -   {{this.name}} ({{this.gender}})
     {{/each}}
 {{#if previousPrompts}}
--   **Previously Used Prompts (DO NOT REPEAT):**
+-   **Do not repeat these previous prompts:**
     {{#each previousPrompts}}
     -   "{{this}}"
     {{/each}}
 {{/if}}
-
-Generate the JSON response now.`,
+`,
 });
 
 const generatePromptFlow = ai.defineFlow(
