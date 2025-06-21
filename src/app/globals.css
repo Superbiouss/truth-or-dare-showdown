@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root,
+  html[data-color-scheme="zinc"] {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -31,7 +32,8 @@
     --chart-5: 210 40% 98%;
   }
 
-  .dark {
+  .dark,
+  html.dark[data-color-scheme="zinc"] {
     --background: 224 9% 17%;
     --foreground: 0 0% 95%;
     --card: 224 9% 20%;
@@ -56,6 +58,50 @@
     --chart-3: 217.2 32.6% 17.5%;
     --chart-4: 222.2 47.4% 11.2%;
     --chart-5: 222.2 84% 4.9%;
+  }
+
+  html[data-color-scheme="rose"] {
+    --primary: 346.8 77.2% 49.8%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --ring: 346.8 77.2% 49.8%;
+  }
+  html.dark[data-color-scheme="rose"] {
+    --primary: 346.8 77.2% 49.8%;
+    --primary-foreground: 355.7 100% 97.3%;
+    --ring: 346.8 77.2% 49.8%;
+  }
+
+  html[data-color-scheme="blue"] {
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 221.2 83.2% 53.3%;
+  }
+  html.dark[data-color-scheme="blue"] {
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
+    --ring: 221.2 83.2% 53.3%;
+  }
+
+  html[data-color-scheme="green"] {
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 144.9 80.4% 97.3%;
+    --ring: 142.1 76.2% 36.3%;
+  }
+  html.dark[data-color-scheme="green"] {
+    --primary: 142.1 76.2% 36.3%;
+    --primary-foreground: 144.9 80.4% 97.3%;
+    --ring: 142.1 76.2% 36.3%;
+  }
+
+  html[data-color-scheme="orange"] {
+    --primary: 24.6 95% 53.1%;
+    --primary-foreground: 60 9.1% 97.8%;
+    --ring: 24.6 95% 53.1%;
+  }
+  html.dark[data-color-scheme="orange"] {
+    --primary: 24.6 95% 53.1%;
+    --primary-foreground: 60 9.1% 97.8%;
+    --ring: 24.6 95% 53.1%;
   }
 }
 
