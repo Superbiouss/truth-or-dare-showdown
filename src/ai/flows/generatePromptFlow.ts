@@ -40,39 +40,36 @@ const prompt = ai.definePrompt({
   name: 'generatePrompt',
   input: { schema: GeneratePromptInputSchema.extend({ isAdult: z.boolean() }) },
   output: { schema: GeneratePromptOutputSchema },
-  prompt: `You are an expert at creating fun, engaging, and sometimes embarrassing questions for the party game Truth or Dare. Your goal is to be creative, witty, and surprising.
+  prompt: `You are a creative assistant for the party game Truth or Dare. Your goal is to generate a single, witty, and surprising "{{promptType}}" question based on the provided context.
 
-Your task is to generate a single, engaging "{{promptType}}" question for the current player.
 The question must be short, simple, and very easy to understand for the selected category.
-If the generated prompt is a challenge with a specific time limit (e.g., "stare at another player without laughing for 30 seconds"), you MUST include the 'timerInSeconds' field with the duration. For any prompt that does NOT have a time limit, you MUST OMIT the 'timerInSeconds' field entirely.
 
-Game Details:
-- Category: {{category}}
-{{#if isAdult}}- Intensity Level: {{intensity}} (from 1=tame to 5=wild){{/if}}
+**IMPORTANT RULES:**
+1.  **JSON Output:** Your response MUST be a valid JSON object matching this schema: \`{ "prompt": "The generated question", "timerInSeconds": (number, optional) }\`.
+2.  **No Extra Text:** Do NOT add any preamble like "Here is a dare:" or "Truth:". Your entire output must be only the JSON object.
+3.  **Timer Logic:**
+    *   If the generated prompt is a challenge with a specific time limit (e.g., "stare at another player without laughing for 30 seconds"), you MUST include the 'timerInSeconds' field with the duration.
+    *   For any prompt that does NOT have a time limit, you MUST OMIT the 'timerInSeconds' field entirely.
+4.  **Be Inventive:** Avoid generic or boring questions. The more unexpected, the better.
+5.  **Avoid Repetition:** DO NOT generate any of the prompts from the \`previousPrompts\` list.
 
-Current Player:
-- Name: {{player.name}}
-- Gender: {{player.gender}}
-
-Other Players in the game:
-{{#each players}}
-- {{this.name}} ({{this.gender}})
-{{/each}}
-
+**GAME CONTEXT:**
+-   **Prompt Type:** {{promptType}}
+-   **Category:** {{category}}
+{{#if isAdult}}-   **Intensity Level:** {{intensity}} (from 1=tame to 5=wild){{/if}}
+-   **Current Player:** {{player.name}} ({{player.gender}})
+-   **Other Players:**
+    {{#each players}}
+    -   {{this.name}} ({{this.gender}})
+    {{/each}}
 {{#if previousPrompts}}
-To ensure variety, please DO NOT generate any of the following prompts that have already been used in this game:
-{{#each previousPrompts}}
-- "{{this}}"
-{{/each}}
+-   **Previous Prompts (Do Not Use):**
+    {{#each previousPrompts}}
+    -   "{{this}}"
+    {{/each}}
 {{/if}}
 
-Please generate a creative and context-aware "{{promptType}}" question.
-- For the 'kids' category, keep it light, funny, and age-appropriate.
-- For the 'teens' category, it can be about school, friends, crushes, and social trends.
-- For the '18+' category, tailor the spiciness to the intensity level.
-- Make it personal but not mean-spirited. You can reference other players by name if it makes sense.
-- DO NOT add any preamble like "Here is a dare:" or "Truth:". Just provide the question itself.
-- Be inventive! Avoid generic or boring questions. The more unexpected, the better.`,
+Generate the JSON for the "{{promptType}}" question now.`,
 });
 
 const generatePromptFlow = ai.defineFlow(

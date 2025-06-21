@@ -96,7 +96,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             category,
             intensity,
             players: otherPlayers,
-            previousPrompts: generatedPrompts.slice(-50), // Send more history to AI
+            previousPrompts: generatedPrompts.slice(-20), // Send recent history to AI
         };
 
         // Fetch all three prompts in parallel
