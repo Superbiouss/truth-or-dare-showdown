@@ -3,6 +3,7 @@ export type Player = {
   name: string;
   score: number;
   gender: 'male' | 'female';
+  avatar: string;
 };
 
 export type GameCategory = 'kids' | 'teens' | '18+';
@@ -10,6 +11,7 @@ export type GameCategory = 'kids' | 'teens' | '18+';
 export type Screen = 'player-setup' | 'category-selection' | 'game' | 'leaderboard';
 
 export type Prompt = {
-  type: 'truth' | 'dare';
+  type: 'truth' | 'dare' | 'wildcard';
   text: string;
+  points: number;
 };

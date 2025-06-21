@@ -13,24 +13,43 @@ export default function Home() {
   const [players, setPlayers] = useState<Player[]>([]);
   const [category, setCategory] = useState<GameCategory>('kids');
   const [intensity, setIntensity] = useState(1);
+  const [rounds, setRounds] = useState(5);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
 
   const handleStartGame = (newPlayers: Player[]) => {
     setPlayers(newPlayers);
     setScreen('category-selection');
   };
 
-  const handleCategorySelect = (selectedCategory: GameCategory, selectedIntensity: number) => {
+  const handleCategorySelect = (selectedCategory: GameCategory, selectedIntensity: number, selectedRounds: number) => {
     setCategory(selectedCategory);
     setIntensity(selectedIntensity);
+    setRounds(selectedRounds);
+    setCurrentRound(1);
+    setCurrentPlayerIndex(0);
     setScreen('game');
   };
 
-  const handleTurnComplete = (playerId: number, points: number) => {
+  const handleTurnComplete = (points: number) => {
+    const currentPlayerId = players[currentPlayerIndex].id;
     setPlayers(prevPlayers =>
       prevPlayers.map(p =>
-        p.id === playerId ? { ...p, score: p.score + points } : p
+        p.id === currentPlayerId ? { ...p, score: p.score + points } : p
       )
     );
+
+    const nextPlayerIndex = (currentPlayerIndex + 1);
+    if (nextPlayerIndex >= players.length) { // Last player just finished their turn
+        if (currentRound >= rounds) {
+            handleEndGame();
+        } else {
+            setCurrentRound(prev => prev + 1);
+            setCurrentPlayerIndex(0);
+        }
+    } else {
+        setCurrentPlayerIndex(nextPlayerIndex);
+    }
   };
 
   const handleEndGame = () => {
@@ -41,6 +60,9 @@ export default function Home() {
     setPlayers([]);
     setCategory('kids');
     setIntensity(1);
+    setRounds(5);
+    setCurrentRound(1);
+    setCurrentPlayerIndex(0);
     setScreen('player-setup');
   };
 
@@ -54,10 +76,13 @@ export default function Home() {
         return (
           <GameScreen
             players={players}
+            currentPlayer={players[currentPlayerIndex]}
             category={category}
             intensity={intensity}
             onTurnComplete={handleTurnComplete}
             onEndGame={handleEndGame}
+            rounds={rounds}
+            currentRound={currentRound}
           />
         );
       case 'leaderboard':

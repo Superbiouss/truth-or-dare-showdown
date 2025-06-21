@@ -5,7 +5,7 @@ import type { Player } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Icons } from "@/components/icons";
+import { Icons, AvatarIconKey } from "@/components/icons";
 import { triggerVibration } from "@/lib/utils";
 import Confetti from 'react-confetti';
 
@@ -73,7 +73,9 @@ export function Leaderboard({ players, onPlayAgain }: LeaderboardProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {sortedPlayers.map((player, index) => (
+              {sortedPlayers.map((player, index) => {
+                const AvatarIcon = Icons[player.avatar as AvatarIconKey];
+                return (
                 <TableRow 
                   key={player.id} 
                   className={`animate-in fade-in slide-in-from-bottom-4 ${index === 0 ? "bg-yellow-400/20" : ""}`}
@@ -82,10 +84,13 @@ export function Leaderboard({ players, onPlayAgain }: LeaderboardProps) {
                   <TableCell className="font-medium text-center">
                     {index === 0 ? <Icons.Crown className="w-5 h-5 inline text-yellow-500 animate-in zoom-in-150 duration-500 delay-500" /> : index + 1}
                   </TableCell>
-                  <TableCell>{player.name}</TableCell>
+                  <TableCell className="flex items-center gap-3">
+                    <AvatarIcon className="w-6 h-6" />
+                    {player.name}
+                  </TableCell>
                   <TableCell className="text-right">{player.score}</TableCell>
                 </TableRow>
-              ))}
+              )})}
             </TableBody>
           </Table>
         </CardContent>

@@ -1,0 +1,75 @@
+'use server';
+/**
+ * @fileOverview Generates truth or dare prompts using an AI model.
+ *
+ * - generatePrompt - A function that creates a truth or dare question.
+ * - GeneratePromptInput - The input type for the generatePrompt function.
+ * - GeneratePromptOutput - The return type for the generatePrompt function.
+ */
+
+import { ai } from '@/ai/genkit';
+import { z } from 'zod';
+
+const PlayerPromptSchema = z.object({
+    name: z.string(),
+    gender: z.enum(['male', 'female']),
+});
+
+const GeneratePromptInputSchema = z.object({
+  player: PlayerPromptSchema,
+  category: z.enum(['kids', 'teens', '18+']),
+  intensity: z.number().min(1).max(5),
+  promptType: z.enum(['truth', 'dare']),
+  players: z.array(PlayerPromptSchema)
+});
+export type GeneratePromptInput = z.infer<typeof GeneratePromptInputSchema>;
+
+const GeneratePromptOutputSchema = z.object({
+  prompt: z.string().describe('The generated truth or dare question.'),
+});
+export type GeneratePromptOutput = z.infer<typeof GeneratePromptOutputSchema>;
+
+
+export async function generatePrompt(input: GeneratePromptInput): Promise<GeneratePromptOutput> {
+  return generatePromptFlow(input);
+}
+
+const prompt = ai.definePrompt({
+  name: 'generatePrompt',
+  input: { schema: GeneratePromptInputSchema.extend({ isAdult: z.boolean() }) },
+  output: { schema: GeneratePromptOutputSchema },
+  prompt: `You are a fun and creative game host for a game of Truth or Dare.
+Your task is to generate a single, engaging "{{promptType}}" question for the current player.
+
+Game Details:
+- Category: {{category}}
+{{#if isAdult}}- Intensity Level: {{intensity}} (from 1=tame to 5=wild){{/if}}
+
+Current Player:
+- Name: {{player.name}}
+- Gender: {{player.gender}}
+
+Other Players in the game:
+{{#each players}}
+- {{this.name}} ({{this.gender}})
+{{/each}}
+
+Please generate a creative and context-aware "{{promptType}}" question.
+- For the 'kids' category, keep it light, funny, and age-appropriate.
+- For the 'teens' category, it can be about school, friends, crushes, and social trends.
+- For the '18+' category, tailor the spiciness to the intensity level.
+- Make it personal but not mean-spirited. You can reference other players by name if it makes sense.
+- DO NOT add any preamble like "Here is a dare:" or "Truth:". Just provide the question itself.`,
+});
+
+const generatePromptFlow = ai.defineFlow(
+  {
+    name: 'generatePromptFlow',
+    inputSchema: GeneratePromptInputSchema,
+    outputSchema: GeneratePromptOutputSchema,
+  },
+  async (input) => {
+    const { output } = await prompt({ ...input, isAdult: input.category === '18+' });
+    return output!;
+  }
+);

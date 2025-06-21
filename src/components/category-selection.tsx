@@ -11,12 +11,13 @@ import { Icons } from "@/components/icons";
 import { triggerVibration } from "@/lib/utils";
 
 interface CategorySelectionProps {
-  onSelect: (category: GameCategory, intensity: number) => void;
+  onSelect: (category: GameCategory, intensity: number, rounds: number) => void;
 }
 
 export function CategorySelection({ onSelect }: CategorySelectionProps) {
   const [category, setCategory] = useState<GameCategory | null>(null);
   const [intensity, setIntensity] = useState(1);
+  const [rounds, setRounds] = useState(5);
 
   const handleCategorySelect = (selectedCategory: GameCategory) => {
     triggerVibration();
@@ -26,7 +27,7 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
   const handleStart = () => {
     if (category) {
       triggerVibration([100, 50, 100]);
-      onSelect(category, intensity);
+      onSelect(category, intensity, rounds);
     }
   };
 
@@ -40,54 +41,74 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
     <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl">Choose Your Flavor</CardTitle>
-        <CardDescription>Select a category to begin the game.</CardDescription>
+        <CardDescription>Select a category and game length to begin.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {categories.map((cat) => {
-            if (cat.name === '18+') {
+        <div>
+          <Label className="text-sm font-medium">Category</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            {categories.map((cat) => {
+              if (cat.name === '18+') {
+                return (
+                  <AlertDialog key={cat.name}>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant={category === cat.name ? "default" : "outline"}
+                        className="w-full h-24 flex flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95"
+                        onClick={() => handleCategorySelect(cat.name)}
+                      >
+                        <cat.icon className="w-8 h-8"/>
+                        <span className="capitalize">{cat.name}</span>
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          This category contains mature themes. Please ensure all players are 18 years of age or older.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => { triggerVibration(); setCategory(null); }}>Go Back</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => triggerVibration()}>I Confirm</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                );
+              }
               return (
-                <AlertDialog key={cat.name}>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant={category === cat.name ? "default" : "outline"}
-                      className="w-full h-24 flex flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95"
-                      onClick={() => handleCategorySelect(cat.name)}
-                    >
-                      <cat.icon className="w-8 h-8"/>
-                      <span className="capitalize">{cat.name}</span>
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This category contains mature themes. Please ensure all players are 18 years of age or older.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => { triggerVibration(); setCategory(null); }}>Go Back</AlertDialogCancel>
-                      <AlertDialogAction onClick={() => triggerVibration()}>I Confirm</AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                  key={cat.name}
+                  variant={category === cat.name ? "default" : "outline"}
+                  className="w-full h-24 flex flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95"
+                  onClick={() => handleCategorySelect(cat.name)}
+                >
+                  <cat.icon className="w-8 h-8"/>
+                  <span className="capitalize">{cat.name}</span>
+                </Button>
               );
-            }
-            return (
-              <Button
-                key={cat.name}
-                variant={category === cat.name ? "default" : "outline"}
-                className="w-full h-24 flex flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95"
-                onClick={() => handleCategorySelect(cat.name)}
-              >
-                <cat.icon className="w-8 h-8"/>
-                <span className="capitalize">{cat.name}</span>
-              </Button>
-            );
-          })}
+            })}
+          </div>
         </div>
+        
+        <div className="space-y-4 pt-2">
+            <Label htmlFor="rounds" className="text-center block">Number of Rounds: {rounds}</Label>
+            <Slider
+                id="rounds"
+                min={3}
+                max={15}
+                step={1}
+                value={[rounds]}
+                onValueChange={(value) => setRounds(value[0])}
+            />
+            <div className="flex justify-between text-xs text-muted-foreground">
+                <span>Quick Game</span>
+                <span>Marathon</span>
+            </div>
+        </div>
+
         {category === '18+' && (
-          <div className="space-y-4 pt-4 animate-in fade-in duration-300">
+          <div className="space-y-4 pt-2 animate-in fade-in duration-300">
             <Label htmlFor="intensity" className="text-center block">Intensity Level: {intensity}</Label>
             <Slider
               id="intensity"

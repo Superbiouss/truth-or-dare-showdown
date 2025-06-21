@@ -10,15 +10,16 @@ import { useToast } from "@/hooks/use-toast";
 import { User, X, PlusCircle } from "lucide-react";
 import { triggerVibration } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Icons, avatarIconKeys, AvatarIconKey } from "@/components/icons";
 
 interface PlayerSetupProps {
   onStart: (players: Player[]) => void;
 }
 
 export function PlayerSetup({ onStart }: PlayerSetupProps) {
-  const [players, setPlayers] = useState<{ name: string; gender: 'male' | 'female' }[]>([
-    { name: "", gender: 'male' },
-    { name: "", gender: 'male' },
+  const [players, setPlayers] = useState<{ name: string; gender: 'male' | 'female'; avatar: AvatarIconKey }[]>([
+    { name: "", gender: 'male', avatar: 'Cat' },
+    { name: "", gender: 'male', avatar: 'Dog' },
   ]);
   const { toast } = useToast();
 
@@ -32,12 +33,19 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
     const newPlayers = [...players];
     newPlayers[index].gender = gender;
     setPlayers(newPlayers);
-  }
+  };
+  
+  const handleAvatarChange = (index: number, avatar: AvatarIconKey) => {
+    const newPlayers = [...players];
+    newPlayers[index].avatar = avatar;
+    setPlayers(newPlayers);
+  };
 
   const addPlayer = () => {
     triggerVibration();
     if (players.length < 4) {
-      setPlayers([...players, { name: "", gender: 'male' }]);
+      const nextAvatar = avatarIconKeys[players.length % avatarIconKeys.length];
+      setPlayers([...players, { name: "", gender: 'male', avatar: nextAvatar }]);
     } else {
         toast({
             title: "Max players reached",
@@ -71,6 +79,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
       name: p.name.trim(),
       score: 0,
       gender: p.gender,
+      avatar: p.avatar,
     }));
     onStart(newPlayers);
   };
@@ -83,7 +92,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
       </CardHeader>
       <CardContent className="min-h-[200px] space-y-4">
         {players.map((player, index) => (
-          <div key={index} className="space-y-2 p-3 border rounded-lg animate-in fade-in-0 duration-500">
+          <div key={index} className="space-y-3 p-3 border rounded-lg animate-in fade-in-0 duration-500">
             <div className="flex items-center gap-2">
               <Label htmlFor={`player-${index}`} className="sr-only">Player {index + 1}</Label>
               <div className="relative flex-grow">
@@ -108,20 +117,32 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                 </Button>
               )}
             </div>
-            <RadioGroup
-              value={player.gender}
-              onValueChange={(value) => handleGenderChange(index, value as 'male' | 'female')}
-              className="flex gap-4 pt-1"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="male" id={`male-${index}`} />
-                <Label htmlFor={`male-${index}`}>Male</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="female" id={`female-${index}`} />
-                <Label htmlFor={`female-${index}`}>Female</Label>
-              </div>
-            </RadioGroup>
+            <div className="flex items-center justify-between">
+              <RadioGroup
+                value={player.gender}
+                onValueChange={(value) => handleGenderChange(index, value as 'male' | 'female')}
+                className="flex gap-4 pt-1"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="male" id={`male-${index}`} />
+                  <Label htmlFor={`male-${index}`}>Male</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="female" id={`female-${index}`} />
+                  <Label htmlFor={`female-${index}`}>Female</Label>
+                </div>
+              </RadioGroup>
+            </div>
+            <div className="flex items-center gap-2 pt-1 flex-wrap">
+                {avatarIconKeys.map((iconKey) => {
+                    const Icon = Icons[iconKey];
+                    return (
+                        <Button key={iconKey} variant={player.avatar === iconKey ? 'default' : 'outline'} size="icon" onClick={() => handleAvatarChange(index, iconKey)} className="rounded-full">
+                            <Icon className="w-5 h-5" />
+                        </Button>
+                    )
+                })}
+            </div>
           </div>
         ))}
         {players.length < 4 && (
