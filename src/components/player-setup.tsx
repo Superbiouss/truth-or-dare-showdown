@@ -5,108 +5,102 @@ import type { Player } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { User, Trash2 } from "lucide-react";
+import { User, Users } from "lucide-react";
 
 interface PlayerSetupProps {
   onStart: (players: Player[]) => void;
 }
 
 export function PlayerSetup({ onStart }: PlayerSetupProps) {
-  const [players, setPlayers] = useState<Player[]>([]);
-  const [name, setName] = useState("");
-  const [gender, setGender] = useState<'male' | 'female' | 'other'>("other");
+  const [numPlayers, setNumPlayers] = useState<number | null>(null);
+  const [playerNames, setPlayerNames] = useState<string[]>([]);
   const { toast } = useToast();
 
-  const handleAddPlayer = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (name.trim() === "") {
-      toast({
-        title: "Oops!",
-        description: "Player name can't be empty.",
-        variant: "destructive",
-      });
-      return;
-    }
-    if (players.length >= 10) {
-      toast({
-        title: "Max Players Reached",
-        description: "You can't add more than 10 players.",
-        variant: "destructive",
-      });
-      return;
-    }
-    setPlayers([...players, { id: Date.now(), name, gender, score: 0 }]);
-    setName("");
+  const handleNumPlayerSelect = (num: number) => {
+    setNumPlayers(num);
+    setPlayerNames(Array(num).fill(""));
   };
 
-  const removePlayer = (id: number) => {
-    setPlayers(players.filter((p) => p.id !== id));
+  const handleNameChange = (index: number, name: string) => {
+    const newNames = [...playerNames];
+    newNames[index] = name;
+    setPlayerNames(newNames);
   };
+
+  const handleStartGame = () => {
+    if (playerNames.some((name) => name.trim() === "")) {
+      toast({
+        title: "Incomplete Setup",
+        description: "Please enter a name for every player.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newPlayers: Player[] = playerNames.map((name, index) => ({
+      id: index,
+      name: name.trim(),
+      score: 0,
+    }));
+    onStart(newPlayers);
+  };
+  
+  const playerCounts = [2, 3, 4];
 
   return (
     <Card className="w-full max-w-md bg-card/30 backdrop-blur-lg border border-primary/20 shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl">Player Setup</CardTitle>
-        <CardDescription>Add at least 2 players to start the showdown!</CardDescription>
+        <CardDescription>
+          {numPlayers === null
+            ? "Choose the number of players."
+            : "Enter player names."}
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleAddPlayer} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="name">Player Name</Label>
-            <Input
-              id="name"
-              placeholder="Enter a nickname"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Gender (Optional)</Label>
-            <RadioGroup
-              defaultValue="other"
-              onValueChange={(value: 'male' | 'female' | 'other') => setGender(value)}
-              className="flex space-x-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="male" id="male" />
-                <Label htmlFor="male">Male</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="female" id="female" />
-                <Label htmlFor="female">Female</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="other" id="other" />
-                <Label htmlFor="other">Other</Label>
-              </div>
-            </RadioGroup>
-          </div>
-          <Button type="submit" className="w-full">Add Player</Button>
-        </form>
-        <div className="mt-6 space-y-2">
-          <h3 className="font-medium">Players Joined:</h3>
-          <ul className="space-y-2">
-            {players.map((player) => (
-              <li key={player.id} className="flex items-center justify-between p-2 rounded-md bg-secondary/50">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4" />
-                  <span>{player.name}</span>
-                </div>
-                <Button variant="ghost" size="icon" onClick={() => removePlayer(player.id)}>
-                  <Trash2 className="w-4 h-4 text-destructive" />
+      <CardContent className="min-h-[200px]">
+        {numPlayers === null ? (
+          <div className="flex justify-around items-center pt-8">
+             {playerCounts.map((num) => (
+                <Button
+                    key={num}
+                    variant="outline"
+                    className="w-24 h-24 flex-col gap-2 text-lg"
+                    onClick={() => handleNumPlayerSelect(num)}
+                >
+                    <Users />
+                    {num} Players
                 </Button>
-              </li>
+             ))}
+          </div>
+        ) : (
+          <div className="space-y-4 animate-in fade-in-0 duration-500">
+            {playerNames.map((name, index) => (
+              <div key={index} className="space-y-2">
+                <Label htmlFor={`player-${index}`}>Player {index + 1}</Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    id={`player-${index}`}
+                    placeholder={`Enter Player ${index + 1}'s Name`}
+                    value={name}
+                    onChange={(e) => handleNameChange(index, e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
             ))}
-          </ul>
-        </div>
+             <Button variant="link" onClick={() => setNumPlayers(null)}>
+                Back
+            </Button>
+          </div>
+        )}
       </CardContent>
       <CardFooter>
         <Button
-          onClick={() => onStart(players)}
-          disabled={players.length < 2}
+          onClick={handleStartGame}
+          disabled={numPlayers === null}
           className="w-full"
           size="lg"
         >
