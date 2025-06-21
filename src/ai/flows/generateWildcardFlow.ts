@@ -39,33 +39,32 @@ const prompt = ai.definePrompt({
   name: 'generateWildcardPrompt',
   input: { schema: GenerateWildcardInputSchema.extend({ isAdult: z.boolean() }) },
   output: { schema: GenerateWildcardOutputSchema },
-  prompt: `You are an AI assistant that ONLY responds with a single, valid JSON object. Do not output markdown, text, or any characters before or after the JSON object.
+  prompt: `Your sole task is to generate a single JSON object for a "Wildcard" challenge in a party game.
+Adhere strictly to the following Zod schema for your output.
 
-Your task is to generate a "Wildcard" challenge for a party game. A wildcard is a unique, fun, and surprising task—NOT a truth or a dare.
-
-The JSON object MUST conform to this Zod schema:
 \`{
   "challenge": "z.string() // The creative wildcard challenge.",
   "points": "z.number().int().min(15).max(30) // Points for completion.",
-  "timerInSeconds": "z.number().optional() // IMPORTANT: OMIT this field entirely unless the task has a very specific, explicit time limit. For most challenges, this field should not be present in the JSON."
+  "timerInSeconds": "z.number().optional() // OMIT this field unless the task has a specific time limit."
 }\`
 
-**INSTRUCTIONS:**
-1.  **Points:** Award points between 15 and 30 based on the challenge's difficulty and creativity.
-2.  **Timed Tasks:** If, and ONLY IF, the generated challenge is a task with a specific, explicit time limit, you MUST include the 'timerInSeconds' field. For ALL other challenges, you MUST OMIT the 'timerInSeconds' field completely from the JSON response.
-3.  **Be Creative:** Think outside the box. The goal is to surprise the players with something fun and unexpected.
-4.  **Avoid Repetition:** Do NOT generate any of the challenges from the \`previousPrompts\` list provided in the context.
+**CRITICAL RULES:**
+1.  **JSON ONLY:** Your entire response MUST be a single, valid JSON object. Do not include any text, markdown, or any other characters before or after the JSON.
+2.  **TIMER:** Only include the \`timerInSeconds\` field if the task has an explicit, specific duration. For all other challenges, you MUST OMIT this field from the JSON.
+3.  **POINTS:** Award points between 15 and 30 based on the challenge's difficulty.
+4.  **NO REPEATS:** Do not generate any of the challenges from the \`previousPrompts\` list.
+5.  **BE CREATIVE:** Think outside the box. The goal is to surprise the players with something fun and unexpected.
 
 **GAME CONTEXT:**
 -   **Category:** {{category}}
-{{#if isAdult}}-   **Intensity Level (1=tame to 5=wild):** {{intensity}}{{/if}}
+{{#if isAdult}}-   **Intensity Level (1=tame, 5=wild):** {{intensity}}{{/if}}
 -   **Current Player:** {{player.name}} ({{player.gender}})
 -   **Other Players:**
     {{#each players}}
     -   {{this.name}} ({{this.gender}})
     {{/each}}
 {{#if previousPrompts}}
--   **Previously Used Prompts (Do Not Repeat):**
+-   **Previously Used Prompts (DO NOT REPEAT):**
     {{#each previousPrompts}}
     -   "{{this}}"
     {{/each}}
