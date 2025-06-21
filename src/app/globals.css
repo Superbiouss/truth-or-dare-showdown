@@ -2,64 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  font-family: Arial, Helvetica, sans-serif;
-}
-
 @layer base {
   :root {
-    --background: 224 71% 4%; /* Deep Blue */
-    --foreground: 210 40% 98%; /* Light Gray */
-    --card: 224 71% 9%; /* Slightly lighter blue */
-    --card-foreground: 210 40% 98%;
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 347 97% 73%; /* Vibrant Pink */
-    --primary-foreground: 347 97% 10%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 210 40% 60%;
-    --accent: 210 40% 98%;
-    --accent-foreground: 224 71% 4%;
+    --background: 267 83% 92%; /* Soft lavender */
+    --foreground: 285 30% 20%;
+    --card: 267 80% 98%;
+    --card-foreground: 285 30% 20%;
+    --popover: 267 80% 98%;
+    --popover-foreground: 285 30% 20%;
+    --primary: 285 86% 53%; /* Vibrant purple */
+    --primary-foreground: 267 83% 98%;
+    --secondary: 267 83% 88%;
+    --secondary-foreground: 285 86% 25%;
+    --muted: 267 83% 88%;
+    --muted-foreground: 285 30% 50%;
+    --accent: 285 86% 90%;
+    --accent-foreground: 285 86% 25%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 285 86% 85%;
+    --input: 285 86% 85%;
+    --ring: 285 86% 53%;
+    --radius: 1rem;
+    --chart-1: 285 86% 53%;
+    --chart-2: 285 86% 45%;
+    --chart-3: 285 86% 35%;
+    --chart-4: 285 86% 25%;
+    --chart-5: 285 86% 15%;
+  }
+ 
+  .dark {
+    --background: 285 10% 10%;
+    --foreground: 267 83% 92%;
+    --card: 285 10% 15%;
+    --card-foreground: 267 83% 92%;
+    --popover: 285 10% 10%;
+    --popover-foreground: 267 83% 92%;
+    --primary: 285 86% 65%;
+    --primary-foreground: 285 86% 10%;
+    --secondary: 285 10% 20%;
+    --secondary-foreground: 267 83% 92%;
+    --muted: 285 10% 20%;
+    --muted-foreground: 267 83% 60%;
+    --accent: 285 10% 20%;
+    --accent-foreground: 267 83% 92%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217 33% 27%;
-    --input: 217 33% 27%;
-    --ring: 347 97% 73%;
-    --radius: 0.8rem;
-    --chart-1: 347 97% 73%;
-    --chart-2: 210 40% 98%;
-    --chart-3: 180 97% 73%;
-    --chart-4: 60 97% 73%;
-    --chart-5: 280 97% 73%;
-  }
-
-  .dark {
-    --background: 224 71% 4%;
-    --foreground: 210 40% 98%;
-    --card: 224 71% 9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 224 71% 4%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 347 97% 73%;
-    --primary-foreground: 347 97% 10%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 210 40% 60%;
-    --accent: 210 40% 98%;
-    --accent-foreground: 224 71% 4%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 217 33% 27%;
-    --input: 217 33% 27%;
-    --ring: 347 97% 73%;
-    --chart-1: 347 97% 73%;
-    --chart-2: 210 40% 98%;
-    --chart-3: 180 97% 73%;
-    --chart-4: 60 97% 73%;
-    --chart-5: 280 97% 73%;
+    --border: 285 10% 25%;
+    --input: 285 10% 25%;
+    --ring: 285 86% 65%;
+    --chart-1: 285 86% 65%;
+    --chart-2: 285 86% 55%;
+    --chart-3: 285 86% 45%;
+    --chart-4: 285 86% 35%;
+    --chart-5: 285 86% 25%;
   }
 }
 
@@ -69,16 +65,5 @@ body {
   }
   body {
     @apply bg-background text-foreground;
-    background-image:
-        radial-gradient(at 27% 37%, hsla(215, 98%, 61%, 0.2) 0px, transparent 50%),
-        radial-gradient(at 97% 21%, hsla(339, 98%, 72%, 0.2) 0px, transparent 50%),
-        radial-gradient(at 52% 99%, hsla(354, 98%, 61%, 0.2) 0px, transparent 50%),
-        radial-gradient(at 10% 29%, hsla(256, 96%, 67%, 0.2) 0px, transparent 50%),
-        radial-gradient(at 97% 96%, hsla(38, 60%, 74%, 0.2) 0px, transparent 50%),
-        radial-gradient(at 33% 50%, hsla(222, 67%, 73%, 0.2) 0px, transparent 50%),
-        radial-gradient(at 79% 53%, hsla(343, 68%, 79%, 0.2) 0px, transparent 50%);
-    background-size: 100% 100%;
-    background-position: center;
-    background-repeat: no-repeat;
   }
 }
