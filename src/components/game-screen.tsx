@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Player, GameCategory, Prompt } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Icons, AvatarIconKey } from "@/components/icons";
-import { triggerVibration } from "@/lib/utils";
+import { triggerVibration, playTick, playTimesUp } from "@/lib/utils";
 import { generatePrompt } from "@/ai/flows/generatePromptFlow";
 import { generateWildcard } from "@/ai/flows/generateWildcardFlow";
 import { generateSpeech } from "@/ai/flows/generateSpeechFlow";
@@ -34,7 +34,21 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPrompts, setGeneratedPrompts] = useState<string[]>([]);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  
+  // Timer state
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  
   const { toast } = useToast();
+
+  useEffect(() => {
+    // Initialize AudioContext on the client after the first user interaction (or mount)
+    if (typeof window !== 'undefined') {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    }
+  }, []);
 
   const getTruthOrDare = async (type: 'truth' | 'dare') => {
     triggerVibration();
@@ -70,7 +84,10 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             }
         }
 
-        setPrompt({ type, text: promptText, points });
+        setPrompt({ type, text: promptText, points, timerInSeconds: result.timerInSeconds });
+        if (result.timerInSeconds) {
+            setTimeLeft(result.timerInSeconds);
+        }
         setGeneratedPrompts(prev => [...prev, promptText]);
         setAudioUrl(finalAudioUrl);
         setTurnInProgress(true);
@@ -114,7 +131,10 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             }
         }
 
-        setPrompt({ type: 'wildcard', text: challengeText, points: result.points });
+        setPrompt({ type: 'wildcard', text: challengeText, points: result.points, timerInSeconds: result.timerInSeconds });
+        if (result.timerInSeconds) {
+            setTimeLeft(result.timerInSeconds);
+        }
         setGeneratedPrompts(prev => [...prev, challengeText]);
         setAudioUrl(finalAudioUrl);
         setTurnInProgress(true);
@@ -130,6 +150,12 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     setPrompt(null);
     setAudioUrl(null);
     setTurnInProgress(false);
+    // Clear timer state
+    setIsTimerRunning(false);
+    setTimeLeft(null);
+    if (timerRef.current) {
+        clearInterval(timerRef.current);
+    }
   }
 
   const handleComplete = () => {
@@ -156,6 +182,37 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     triggerVibration();
     onEndGame();
   };
+
+  const handleStartTimer = () => {
+    if (audioContextRef.current && audioContextRef.current.state === "suspended") {
+        audioContextRef.current.resume();
+    }
+    setIsTimerRunning(true);
+  }
+
+  // Timer countdown effect
+  useEffect(() => {
+    if (isTimerRunning && timeLeft !== null && timeLeft > 0) {
+        timerRef.current = setInterval(() => {
+            setTimeLeft(prev => (prev !== null ? prev - 1 : 0));
+            if (audioContextRef.current) {
+                playTick(audioContextRef.current);
+            }
+        }, 1000);
+    } else if (isTimerRunning && timeLeft === 0) {
+        setIsTimerRunning(false);
+        if (audioContextRef.current) {
+            playTimesUp(audioContextRef.current);
+        }
+        triggerVibration([100, 50, 100]);
+    }
+
+    return () => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+        }
+    };
+  }, [isTimerRunning, timeLeft]);
   
   const PlayerAvatar = Icons[currentPlayer.avatar as AvatarIconKey];
   const TtsIcon = isTtsEnabled ? Icons.Volume2 : Icons.VolumeX;
@@ -207,18 +264,37 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                     </div>
                   )
                 ) : (
-                    <div className="space-y-6 text-center animate-in fade-in zoom-in-95 duration-500">
+                    <div className="space-y-4 text-center animate-in fade-in zoom-in-95 duration-500 w-full">
                         <h3 className="text-xl font-semibold capitalize text-primary">{prompt?.type}</h3>
                         <p className="text-2xl font-medium">{prompt?.text}</p>
                         {audioUrl && <audio src={audioUrl} autoPlay />}
                         {prompt && (
                            <Badge variant="secondary" className="text-base">+{prompt.points} Points</Badge>
                         )}
-                        <div className="flex justify-center items-center gap-4">
-                            <Button onClick={handleSkip} size="lg" variant="outline" className="mt-4 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                        
+                        {/* Timer Section */}
+                        {prompt?.timerInSeconds && timeLeft !== null && (
+                            <div className="mt-6 space-y-4">
+                                <div className="text-6xl font-bold font-mono text-primary tabular-nums">
+                                    {timeLeft}s
+                                </div>
+                                {!isTimerRunning && timeLeft > 0 ? (
+                                    <Button onClick={handleStartTimer} size="lg" className="bg-green-600 hover:bg-green-700">
+                                        <Icons.Play className="mr-2" /> Start Timer
+                                    </Button>
+                                ) : timeLeft === 0 ? (
+                                    <p className="text-lg font-semibold text-green-600 animate-pulse">Time's up!</p>
+                                ) : (
+                                    <p className="text-muted-foreground">Timer running...</p>
+                                )}
+                            </div>
+                        )}
+
+                        <div className="flex justify-center items-center gap-4 pt-4">
+                            <Button onClick={handleSkip} size="lg" variant="outline" className="transition-transform transform-gpu hover:scale-105 active:scale-95">
                                 Skip (-5 Pts)
                             </Button>
-                            <Button onClick={handleComplete} size="lg" className="mt-4 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                            <Button onClick={handleComplete} size="lg" className="transition-transform transform-gpu hover:scale-105 active:scale-95">
                                 Completed
                             </Button>
                         </div>

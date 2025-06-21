@@ -27,6 +27,7 @@ export type GenerateWildcardInput = z.infer<typeof GenerateWildcardInputSchema>;
 const GenerateWildcardOutputSchema = z.object({
   challenge: z.string().describe('The generated wildcard challenge. This should be a creative, unexpected task.'),
   points: z.number().int().min(15).max(30).describe('The points awarded for completing the challenge, between 15 and 30.'),
+  timerInSeconds: z.number().optional().describe('If the challenge is a timed challenge, the duration in seconds. Otherwise, this should be omitted.'),
 });
 export type GenerateWildcardOutput = z.infer<typeof GenerateWildcardOutputSchema>;
 
@@ -41,6 +42,7 @@ const prompt = ai.definePrompt({
   prompt: `You are a fun and creative game host for a game of Truth or Dare.
 Your task is to generate a single, engaging "Wildcard" challenge for the current player. A wildcard is a fun, creative, unexpected task that is NOT a simple truth or a dare. It could involve acting, a mini-game, or interacting with the environment.
 The challenge must be short, simple, and very easy to understand for the selected category.
+If the challenge involves a time limit (e.g., "do something for 30 seconds"), you MUST specify the duration in seconds in the 'timerInSeconds' field.
 
 Game Details:
 - Category: {{category}}
@@ -66,7 +68,7 @@ Please generate a creative Wildcard challenge and decide how many points it's wo
 - Keep challenges appropriate for the selected category and intensity.
 - Be very creative! The goal is to surprise the players.
 - DO NOT add any preamble like "Wildcard:". Just provide the challenge description.
-- You must provide both the 'challenge' text and the 'points' value in your response.`,
+- You must provide the 'challenge' text, the 'points' value, and optionally the 'timerInSeconds' value in your response.`,
 });
 
 const generateWildcardFlow = ai.defineFlow(

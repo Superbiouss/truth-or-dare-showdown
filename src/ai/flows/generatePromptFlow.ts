@@ -27,6 +27,7 @@ export type GeneratePromptInput = z.infer<typeof GeneratePromptInputSchema>;
 
 const GeneratePromptOutputSchema = z.object({
   prompt: z.string().describe('The generated truth or dare question.'),
+  timerInSeconds: z.number().optional().describe('If the prompt is a timed challenge, the duration in seconds. Otherwise, this should be omitted.'),
 });
 export type GeneratePromptOutput = z.infer<typeof GeneratePromptOutputSchema>;
 
@@ -42,6 +43,7 @@ const prompt = ai.definePrompt({
   prompt: `You are a fun and creative game host for a game of Truth or Dare.
 Your task is to generate a single, engaging "{{promptType}}" question for the current player.
 The question must be short, simple, and very easy to understand for the selected category.
+If the challenge involves a time limit (e.g., "do something for 30 seconds"), you MUST specify the duration in seconds in the 'timerInSeconds' field.
 
 Game Details:
 - Category: {{category}}

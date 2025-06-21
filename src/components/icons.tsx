@@ -1,4 +1,4 @@
-import { Swords, Crown, User, Gamepad2, BrainCircuit, Flame, Bot, Shield, Skull, Baby, Award, Cat, Dog, Ghost, Rocket, Heart, Star, Wand2, Volume2, VolumeX } from "lucide-react";
+import { Swords, Crown, User, Gamepad2, BrainCircuit, Flame, Bot, Shield, Skull, Baby, Award, Cat, Dog, Ghost, Rocket, Heart, Star, Wand2, Volume2, VolumeX, Play } from "lucide-react";
 
 export const Icons = {
     Logo: Swords,
@@ -21,6 +21,7 @@ export const Icons = {
     Star,
     Volume2,
     VolumeX,
+    Play,
 };
 
 export const avatarIconKeys = ['Cat', 'Dog', 'Ghost', 'Rocket', 'Heart', 'Star', 'Gamepad', 'AI'] as const;

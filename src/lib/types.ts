@@ -14,4 +14,5 @@ export type Prompt = {
   type: 'truth' | 'dare' | 'wildcard';
   text: string;
   points: number;
+  timerInSeconds?: number;
 };
