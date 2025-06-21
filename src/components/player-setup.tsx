@@ -14,9 +14,10 @@ import { Icons, avatarIconKeys, AvatarIconKey } from "@/components/icons";
 
 interface PlayerSetupProps {
   onStart: (players: Player[]) => void;
+  onShowHistory: () => void;
 }
 
-export function PlayerSetup({ onStart }: PlayerSetupProps) {
+export function PlayerSetup({ onStart, onShowHistory }: PlayerSetupProps) {
   const [players, setPlayers] = useState<{ name: string; gender: 'male' | 'female'; avatar: AvatarIconKey }[]>([
     { name: "", gender: 'male', avatar: 'Cat' },
     { name: "", gender: 'male', avatar: 'Dog' },
@@ -169,7 +170,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
           </div>
         )}
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex flex-col gap-2 pt-4">
         <Button
           onClick={handleStartGame}
           disabled={players.some(p => p.name.trim() === "")}
@@ -177,6 +178,14 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
           size="lg"
         >
           Start Game
+        </Button>
+        <Button
+          variant="outline"
+          className="w-full"
+          onClick={onShowHistory}
+        >
+          <Icons.History className="mr-2 h-4 w-4" />
+          Game History
         </Button>
       </CardFooter>
     </Card>

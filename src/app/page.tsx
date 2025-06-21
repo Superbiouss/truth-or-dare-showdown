@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import type { Player, GameCategory, Screen } from "@/lib/types";
+import { useState, useEffect } from "react";
+import type { Player, GameCategory, Screen, GameResult } from "@/lib/types";
 import { PlayerSetup } from "@/components/player-setup";
 import { CategorySelection } from "@/components/category-selection";
 import { GameScreen } from "@/components/game-screen";
 import { Leaderboard } from "@/components/leaderboard";
+import { GameHistory } from "@/components/game-history";
 import { Icons } from "@/components/icons";
 import { useToast } from "@/hooks/use-toast";
 
@@ -18,7 +19,20 @@ export default function Home() {
   const [currentRound, setCurrentRound] = useState(1);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
+  const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
   const { toast } = useToast();
+
+  useEffect(() => {
+    try {
+      const storedHistory = localStorage.getItem('gameHistory');
+      if (storedHistory) {
+        setGameHistory(JSON.parse(storedHistory));
+      }
+    } catch (error) {
+      console.error("Failed to parse game history from localStorage", error);
+      setGameHistory([]);
+    }
+  }, []);
 
   const handleStartGame = (newPlayers: Player[]) => {
     setPlayers(newPlayers);
@@ -57,7 +71,7 @@ export default function Home() {
                 setCurrentRound(prev => prev + 1);
                 setCurrentPlayerIndex(0);
             } else {
-                handleEndGame();
+                handleEndGame(updatedPlayers);
             }
         } else {
             setCurrentRound(prev => prev + 1);
@@ -68,7 +82,23 @@ export default function Home() {
     }
   };
 
-  const handleEndGame = () => {
+  const handleEndGame = (finalPlayers: Player[] = players) => {
+    const sortedPlayers = [...finalPlayers].sort((a, b) => b.score - a.score);
+    const winner = sortedPlayers[0];
+    const newGameResult: GameResult = {
+      id: Date.now(),
+      date: new Date().toLocaleDateString(),
+      players: finalPlayers.map(({ name, score, avatar }) => ({ name, score, avatar })),
+      winnerName: winner && winner.score > 0 ? winner.name : "No one",
+    };
+
+    const updatedHistory = [newGameResult, ...gameHistory].slice(0, 20); // Keep last 20 games
+    setGameHistory(updatedHistory);
+    try {
+        localStorage.setItem('gameHistory', JSON.stringify(updatedHistory));
+    } catch (error) {
+        console.error("Failed to save game history to localStorage", error);
+    }
     setScreen('leaderboard');
   };
 
@@ -81,11 +111,19 @@ export default function Home() {
     setCurrentPlayerIndex(0);
     setScreen('player-setup');
   };
+  
+  const handleShowHistory = () => {
+    setScreen('history');
+  };
+
+  const handleBackToSetup = () => {
+    setScreen('player-setup');
+  };
 
   const renderScreen = () => {
     switch (screen) {
       case 'player-setup':
-        return <PlayerSetup onStart={handleStartGame} />;
+        return <PlayerSetup onStart={handleStartGame} onShowHistory={handleShowHistory} />;
       case 'category-selection':
         return <CategorySelection onSelect={handleCategorySelect} />;
       case 'game':
@@ -96,7 +134,7 @@ export default function Home() {
             category={category}
             intensity={intensity}
             onTurnComplete={handleTurnComplete}
-            onEndGame={handleEndGame}
+            onEndGame={() => handleEndGame()}
             rounds={rounds}
             currentRound={currentRound}
             isTtsEnabled={isTtsEnabled}
@@ -105,8 +143,10 @@ export default function Home() {
         );
       case 'leaderboard':
         return <Leaderboard players={players} onPlayAgain={handlePlayAgain} />;
+      case 'history':
+        return <GameHistory history={gameHistory} onBack={handleBackToSetup} />;
       default:
-        return <PlayerSetup onStart={handleStartGame} />;
+        return <PlayerSetup onStart={handleStartGame} onShowHistory={handleShowHistory} />;
     }
   };
 
