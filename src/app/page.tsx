@@ -125,7 +125,7 @@ export default function Home() {
       case 'player-setup':
         return <PlayerSetup onStart={handleStartGame} onShowHistory={handleShowHistory} />;
       case 'category-selection':
-        return <CategorySelection onSelect={handleCategorySelect} />;
+        return <CategorySelection onSelect={handleCategorySelect} onBack={handleBackToSetup} />;
       case 'game':
         return (
           <GameScreen

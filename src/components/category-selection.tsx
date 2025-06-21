@@ -10,12 +10,14 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Icons } from "@/components/icons";
 import { triggerVibration } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
+import { ArrowLeft } from "lucide-react";
 
 interface CategorySelectionProps {
   onSelect: (category: GameCategory, intensity: number, rounds: number, isTtsEnabled: boolean) => void;
+  onBack: () => void;
 }
 
-export function CategorySelection({ onSelect }: CategorySelectionProps) {
+export function CategorySelection({ onSelect, onBack }: CategorySelectionProps) {
   const [category, setCategory] = useState<GameCategory | null>(null);
   const [intensity, setIntensity] = useState(1);
   const [rounds, setRounds] = useState(5);
@@ -144,7 +146,7 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
         </div>
 
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex flex-col gap-2 pt-4">
         <Button
           onClick={handleStart}
           disabled={!category}
@@ -152,6 +154,10 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
           size="lg"
         >
           Let's Play!
+        </Button>
+        <Button onClick={onBack} variant="outline" className="w-full">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Players
         </Button>
       </CardFooter>
     </Card>
