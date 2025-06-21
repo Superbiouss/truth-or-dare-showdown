@@ -27,7 +27,7 @@ export type GeneratePromptInput = z.infer<typeof GeneratePromptInputSchema>;
 
 const GeneratePromptOutputSchema = z.object({
   prompt: z.string().describe('The generated truth or dare question.'),
-  timerInSeconds: z.number().optional().describe('If the prompt is a timed challenge, the duration in seconds. Otherwise, this should be omitted.'),
+  timerInSeconds: z.number().optional().describe("IMPORTANT: OMIT this field entirely unless the task has a very specific, explicit time limit (e.g., 'stare for 30 seconds'). For most prompts, this field should not be present in the JSON."),
 });
 export type GeneratePromptOutput = z.infer<typeof GeneratePromptOutputSchema>;
 
@@ -47,11 +47,11 @@ Your task is to generate a single, witty, and surprising "{{promptType}}" questi
 The JSON object MUST conform to this Zod schema:
 \`{
   "prompt": "z.string() // The generated truth or dare question.",
-  "timerInSeconds": "z.number().optional() // MUST be omitted unless the task has a specific time limit."
+  "timerInSeconds": "z.number().optional() // IMPORTANT: OMIT this field entirely unless the task has a very specific, explicit time limit (e.g., 'stare for 30 seconds'). For most prompts, this field should not be present in the JSON."
 }\`
 
 **INSTRUCTIONS:**
-1.  **Timed Tasks:** If the prompt is a challenge with a specific time limit (e.g., "stare at someone for 30 seconds"), you MUST include the 'timerInSeconds' field. For all other prompts, you MUST OMIT the 'timerInSeconds' field.
+1.  **Timed Tasks:** If, and ONLY IF, the generated prompt is a challenge with a specific, explicit time limit (e.g., "stare at someone for exactly 30 seconds"), you MUST include the 'timerInSeconds' field. For ALL other prompts, you MUST OMIT the 'timerInSeconds' field completely from the JSON response.
 2.  **Be Creative:** Avoid boring or generic questions. The more unexpected and fun, the better.
 3.  **Avoid Repetition:** Do NOT generate any of the prompts from the \`previousPrompts\` list provided in the context.
 

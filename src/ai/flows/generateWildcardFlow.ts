@@ -27,7 +27,7 @@ export type GenerateWildcardInput = z.infer<typeof GenerateWildcardInputSchema>;
 const GenerateWildcardOutputSchema = z.object({
   challenge: z.string().describe('The generated wildcard challenge. This should be a creative, unexpected task.'),
   points: z.number().int().min(15).max(30).describe('The points awarded for completing the challenge, between 15 and 30.'),
-  timerInSeconds: z.number().optional().describe('If the challenge is a timed challenge, the duration in seconds. Otherwise, this should be omitted.'),
+  timerInSeconds: z.number().optional().describe("IMPORTANT: OMIT this field entirely unless the task has a very specific, explicit time limit. For most challenges, this field should not be present in the JSON."),
 });
 export type GenerateWildcardOutput = z.infer<typeof GenerateWildcardOutputSchema>;
 
@@ -47,12 +47,12 @@ The JSON object MUST conform to this Zod schema:
 \`{
   "challenge": "z.string() // The creative wildcard challenge.",
   "points": "z.number().int().min(15).max(30) // Points for completion.",
-  "timerInSeconds": "z.number().optional() // MUST be omitted unless the task has a specific time limit."
+  "timerInSeconds": "z.number().optional() // IMPORTANT: OMIT this field entirely unless the task has a very specific, explicit time limit. For most challenges, this field should not be present in the JSON."
 }\`
 
 **INSTRUCTIONS:**
 1.  **Points:** Award points between 15 and 30 based on the challenge's difficulty and creativity.
-2.  **Timed Tasks:** If the challenge has a specific time limit, you MUST include the 'timerInSeconds' field. For all other challenges, you MUST OMIT the 'timerInSeconds' field.
+2.  **Timed Tasks:** If, and ONLY IF, the generated challenge is a task with a specific, explicit time limit, you MUST include the 'timerInSeconds' field. For ALL other challenges, you MUST OMIT the 'timerInSeconds' field completely from the JSON response.
 3.  **Be Creative:** Think outside the box. The goal is to surprise the players with something fun and unexpected.
 4.  **Avoid Repetition:** Do NOT generate any of the challenges from the \`previousPrompts\` list provided in the context.
 

@@ -34,13 +34,23 @@ type PrefetchedPrompts = {
   wildcard: GenerateWildcardOutput | null;
 };
 
+// Use the browser's built-in speech synthesis for a reliable, free TTS experience
+const speak = (text: string) => {
+    if (typeof window === 'undefined' || !window.speechSynthesis) {
+        return;
+    }
+    window.speechSynthesis.cancel(); // Stop any previous speech
+    const utterance = new SpeechSynthesisUtterance(text);
+    // Using the default browser voice is the most reliable cross-platform approach
+    window.speechSynthesis.speak(utterance);
+};
+
 export function GameScreen({ players, currentPlayer, category, intensity, onTurnComplete, onEndGame, rounds, currentRound, isTtsEnabled, setIsTtsEnabled, isSuddenDeath }: GameScreenProps) {
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [turnInProgress, setTurnInProgress] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [generatedPrompts, setGeneratedPrompts] = useState<string[]>([]);
   const [prefetchedPrompts, setPrefetchedPrompts] = useState<PrefetchedPrompts>({ truth: null, dare: null, wildcard: null });
-  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
   // Timer state
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -96,12 +106,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
 
       } catch (e: any) {
         console.error(e);
-        let description = "The AI is having trouble coming up with ideas. Please try again later.";
-        if (e.message && e.message.includes('429')) {
-          description = "The daily limit for the AI announcer has been reached. The feature has been disabled for now.";
-          setIsTtsEnabled(false);
-        }
-        toast({ title: "Oh no!", description, variant: "destructive" });
+        toast({ title: "Oh no!", description: "The AI is having trouble coming up with ideas. Please try again later.", variant: "destructive" });
         // Set a fallback prompt so the game can continue
         setPrefetchedPrompts({
           truth: { prompt: "Tell a truth." },
@@ -134,6 +139,10 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     }
 
     if (!selectedPrompt) return;
+    
+    if (isTtsEnabled) {
+      speak(selectedPrompt.text);
+    }
 
     setPrompt(selectedPrompt);
     
@@ -146,7 +155,6 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   
   const clearTurnState = () => {
     setPrompt(null);
-    setAudio(null);
     setTurnInProgress(false);
     // Clear timer state
     setIsTimerRunning(false);
