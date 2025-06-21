@@ -60,7 +60,7 @@ const generateSpeechFlow = ai.defineFlow(
   async ({ text, gender }) => {
     // Select a voice based on the player's gender to create a dynamic interaction.
     // A male-sounding voice for a female player, and a female-sounding voice for a male player.
-    const voiceName = gender === 'female' ? 'Algenib' : 'Achernar';
+    const voiceName = gender === 'female' ? 'Rigel' : 'Vega';
 
     const { media } = await ai.generate({
       model: googleAI.model('gemini-2.5-flash-preview-tts'),
