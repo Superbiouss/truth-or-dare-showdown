@@ -57,6 +57,27 @@ Do not repeat any of the previous challenges.
 {{/if}}
 `;
 
+const extremeWildcardPromptTemplate = `You are an AI for an adults-only party game. Generate a single, truly extreme, wild, and potentially shocking "wildcard" challenge for {{player.name}}. The intensity is set to the maximum (5/5), so do not hold back.
+
+The challenge must be appropriate for the '18+' category at its most intense. Award between 15 and 30 points based on difficulty.
+
+Do not repeat any of the previous challenges. Focus on being edgy and surprising.
+
+**Game Details:**
+-   **Category:** {{category}} (Maximum Intensity)
+-   **Current Player:** {{player.name}} ({{player.gender}})
+-   **Other Players:**
+    {{#each players}}
+    -   {{this.name}} ({{this.gender}})
+    {{/each}}
+{{#if previousPrompts}}
+-   **Do not repeat these previous challenges:**
+    {{#each previousPrompts}}
+    -   "{{this}}"
+    {{/each}}
+{{/if}}
+`;
+
 const getSafetySettingsForCategory = (category: 'kids' | 'teens' | '18+'): SafetySetting[] => {
     switch (category) {
         case 'kids':
@@ -82,6 +103,13 @@ const getSafetySettingsForCategory = (category: 'kids' | 'teens' | '18+'): Safet
             ];
     }
 }
+
+const extremeSafetySettings: SafetySetting[] = [
+    { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+];
 
 const kidsPrompt = ai.definePrompt({
   name: 'generateKidsWildcardPrompt',
@@ -113,6 +141,16 @@ const adultPrompt = ai.definePrompt({
   }
 });
 
+const adultExtremeWildcardPrompt = ai.definePrompt({
+  name: 'generateAdultExtremeWildcardPrompt',
+  input: { schema: GenerateWildcardInputSchema },
+  output: { schema: GenerateWildcardOutputSchema },
+  prompt: extremeWildcardPromptTemplate,
+  config: {
+    safetySettings: extremeSafetySettings,
+  }
+});
+
 
 const generateWildcardFlow = ai.defineFlow(
   {
@@ -130,7 +168,11 @@ const generateWildcardFlow = ai.defineFlow(
             selectedPrompt = teensPrompt;
             break;
         case '18+':
-            selectedPrompt = adultPrompt;
+            if (input.intensity === 5) {
+                selectedPrompt = adultExtremeWildcardPrompt;
+            } else {
+                selectedPrompt = adultPrompt;
+            }
             break;
         default:
             selectedPrompt = kidsPrompt;

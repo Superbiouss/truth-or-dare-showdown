@@ -58,6 +58,27 @@ Do not repeat any of the previous prompts. Focus on being fun and surprising.
 {{/if}}
 `;
 
+const extremePromptTemplate = `You are an AI for an adults-only Truth or Dare game. The intensity is set to the maximum (5/5). Generate a truly extreme, wild, and potentially shocking '{{promptType}}' question for {{player.name}}. Do not hold back.
+
+The question must be appropriate for the '18+' category at its most intense level.
+
+Do not repeat any of the previous prompts. Focus on being shocking and edgy.
+
+**Game Details:**
+-   **Category:** {{category}} (Maximum Intensity)
+-   **Current Player:** {{player.name}} ({{player.gender}})
+-   **Other Players:**
+    {{#each players}}
+    -   {{this.name}} ({{this.gender}})
+    {{/each}}
+{{#if previousPrompts}}
+-   **Do not repeat these previous prompts:**
+    {{#each previousPrompts}}
+    -   "{{this}}"
+    {{/each}}
+{{/if}}
+`;
+
 const getSafetySettingsForCategory = (category: 'kids' | 'teens' | '18+'): SafetySetting[] => {
     switch (category) {
         case 'kids':
@@ -83,6 +104,13 @@ const getSafetySettingsForCategory = (category: 'kids' | 'teens' | '18+'): Safet
             ];
     }
 }
+
+const extremeSafetySettings: SafetySetting[] = [
+    { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
+    { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
+];
 
 const kidsPrompt = ai.definePrompt({
   name: 'generateKidsPrompt',
@@ -114,6 +142,16 @@ const adultPrompt = ai.definePrompt({
   }
 });
 
+const adultExtremePrompt = ai.definePrompt({
+  name: 'generateAdultExtremePrompt',
+  input: { schema: GeneratePromptInputSchema },
+  output: { schema: GeneratePromptOutputSchema },
+  prompt: extremePromptTemplate,
+  config: {
+    safetySettings: extremeSafetySettings,
+  }
+});
+
 const generatePromptFlow = ai.defineFlow(
   {
     name: 'generatePromptFlow',
@@ -130,7 +168,11 @@ const generatePromptFlow = ai.defineFlow(
             selectedPrompt = teensPrompt;
             break;
         case '18+':
-            selectedPrompt = adultPrompt;
+            if (input.intensity === 5) {
+                selectedPrompt = adultExtremePrompt;
+            } else {
+                selectedPrompt = adultPrompt;
+            }
             break;
         default:
             selectedPrompt = kidsPrompt;
