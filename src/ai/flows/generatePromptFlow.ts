@@ -41,6 +41,8 @@ const promptTemplate = `You are an AI for a Truth or Dare game. Generate a short
 
 The question must be appropriate for the '{{category}}' category.
 
+To make the game exciting and up-to-date, incorporate current events, trending topics, social media challenges, or modern pop culture references.
+
 Do not repeat any of the previous prompts. Focus on being fun and surprising.
 
 **Game Details:**
@@ -61,6 +63,8 @@ Do not repeat any of the previous prompts. Focus on being fun and surprising.
 const extremePromptTemplate = `You are an AI for an adults-only Truth or Dare game. The intensity is set to the maximum (5/5). Generate a truly extreme, wild, and potentially shocking '{{promptType}}' question for {{player.name}}. Do not hold back.
 
 The question must be appropriate for the '18+' category at its most intense level.
+
+To make the game exciting and up-to-date, incorporate current events, trending topics, social media challenges, or modern pop culture references.
 
 Do not repeat any of the previous prompts. Focus on being shocking and edgy.
 

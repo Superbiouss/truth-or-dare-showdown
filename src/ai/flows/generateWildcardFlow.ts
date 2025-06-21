@@ -40,6 +40,8 @@ const promptTemplate = `You are an AI for a party game. Generate a single, fun, 
 
 The challenge must be appropriate for the '{{category}}' category. Award between 15 and 30 points based on difficulty.
 
+To make the game exciting and up-to-date, incorporate current events, trending topics, social media challenges, or modern pop culture references.
+
 Do not repeat any of the previous challenges.
 
 **Game Details:**
@@ -60,6 +62,8 @@ Do not repeat any of the previous challenges.
 const extremeWildcardPromptTemplate = `You are an AI for an adults-only party game. Generate a single, truly extreme, wild, and potentially shocking "wildcard" challenge for {{player.name}}. The intensity is set to the maximum (5/5), so do not hold back.
 
 The challenge must be appropriate for the '18+' category at its most intense. Award between 15 and 30 points based on difficulty.
+
+To make the game exciting and up-to-date, incorporate current events, trending topics, social media challenges, or modern pop culture references.
 
 Do not repeat any of the previous challenges. Focus on being edgy and surprising.
 
