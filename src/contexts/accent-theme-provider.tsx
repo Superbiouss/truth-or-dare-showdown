@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 
-type Theme = 'zinc' | 'rose' | 'blue' | 'green' | 'orange';
+type Theme = 'violet' | 'zinc' | 'rose' | 'blue' | 'green' | 'orange';
 
 type AccentThemeContextType = {
   theme: Theme;
@@ -12,13 +12,12 @@ type AccentThemeContextType = {
 const AccentThemeContext = createContext<AccentThemeContextType | undefined>(undefined);
 
 export function AccentThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>('zinc');
+  const [theme, setTheme] = useState<Theme>('violet');
 
   useEffect(() => {
     const storedTheme = localStorage.getItem('color-theme') as Theme | null;
-    if (storedTheme) {
-      handleSetTheme(storedTheme);
-    }
+    // Set the theme from local storage or default to 'violet'
+    handleSetTheme(storedTheme || 'violet');
   }, []);
 
   const handleSetTheme = (newTheme: Theme) => {
