@@ -14,9 +14,9 @@ const AccentThemeContext = createContext<AccentThemeContextType | undefined>(und
 export function AccentThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window !== 'undefined') {
-      return (localStorage.getItem('color-theme') as Theme | null) || 'violet';
+      return (localStorage.getItem('color-theme') as Theme | null) || 'zinc';
     }
-    return 'violet';
+    return 'zinc';
   });
 
   useEffect(() => {
