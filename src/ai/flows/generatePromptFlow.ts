@@ -43,7 +43,7 @@ const prompt = ai.definePrompt({
   prompt: `You are a fun and creative game host for a game of Truth or Dare.
 Your task is to generate a single, engaging "{{promptType}}" question for the current player.
 The question must be short, simple, and very easy to understand for the selected category.
-If the challenge involves a time limit (e.g., "do something for 30 seconds"), you MUST specify the duration in seconds in the 'timerInSeconds' field.
+If the generated prompt is a challenge with a specific time limit (e.g., "stare at another player without laughing for 30 seconds"), you MUST include the 'timerInSeconds' field with the duration. For any prompt that does NOT have a time limit, you MUST OMIT the 'timerInSeconds' field entirely.
 
 Game Details:
 - Category: {{category}}

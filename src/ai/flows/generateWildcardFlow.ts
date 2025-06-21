@@ -42,7 +42,7 @@ const prompt = ai.definePrompt({
   prompt: `You are a fun and creative game host for a game of Truth or Dare.
 Your task is to generate a single, engaging "Wildcard" challenge for the current player. A wildcard is a fun, creative, unexpected task that is NOT a simple truth or a dare. It could involve acting, a mini-game, or interacting with the environment.
 The challenge must be short, simple, and very easy to understand for the selected category.
-If the challenge involves a time limit (e.g., "do something for 30 seconds"), you MUST specify the duration in seconds in the 'timerInSeconds' field.
+If the generated challenge is a task with a specific time limit (e.g., "act like a chicken for 15 seconds"), you MUST include the 'timerInSeconds' field with the duration. For any challenge that does NOT have a time limit, you MUST OMIT the 'timerInSeconds' field entirely.
 
 Game Details:
 - Category: {{category}}
@@ -67,8 +67,7 @@ To ensure variety, please DO NOT generate any of the following challenges that h
 Please generate a creative Wildcard challenge and decide how many points it's worth (between 15 and 30). Higher points for harder challenges.
 - Keep challenges appropriate for the selected category and intensity.
 - Be very creative! The goal is to surprise the players.
-- DO NOT add any preamble like "Wildcard:". Just provide the challenge description.
-- You must provide the 'challenge' text, the 'points' value, and optionally the 'timerInSeconds' value in your response.`,
+- DO NOT add any preamble like "Wildcard:". Just provide the challenge description.`,
 });
 
 const generateWildcardFlow = ai.defineFlow(
