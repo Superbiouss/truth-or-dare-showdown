@@ -8,7 +8,7 @@ export type Player = {
 
 export type GameCategory = 'kids' | 'teens' | '18+';
 
-export type Screen = 'player-setup' | 'category-selection' | 'game' | 'leaderboard' | 'history';
+export type Screen = 'welcome' | 'player-setup' | 'category-selection' | 'game' | 'leaderboard' | 'history';
 
 export type Prompt = {
   type: 'truth' | 'dare' | 'wildcard';

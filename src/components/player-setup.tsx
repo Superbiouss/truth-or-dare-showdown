@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { User, X, PlusCircle } from "lucide-react";
+import { User, X, PlusCircle, ArrowLeft } from "lucide-react";
 import { triggerVibration } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Icons, avatarIconKeys, AvatarIconKey } from "@/components/icons";
@@ -15,9 +15,10 @@ import { Icons, avatarIconKeys, AvatarIconKey } from "@/components/icons";
 interface PlayerSetupProps {
   onStart: (players: Player[]) => void;
   onShowHistory: () => void;
+  onBack: () => void;
 }
 
-export function PlayerSetup({ onStart, onShowHistory }: PlayerSetupProps) {
+export function PlayerSetup({ onStart, onShowHistory, onBack }: PlayerSetupProps) {
   const [players, setPlayers] = useState<{ name: string; gender: 'male' | 'female'; avatar: AvatarIconKey }[]>([
     { name: "", gender: 'male', avatar: 'Cat' },
     { name: "", gender: 'male', avatar: 'Dog' },
@@ -186,6 +187,10 @@ export function PlayerSetup({ onStart, onShowHistory }: PlayerSetupProps) {
         >
           <Icons.History className="mr-2 h-4 w-4" />
           Game History
+        </Button>
+        <Button onClick={onBack} variant="ghost" className="w-full">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back to Welcome
         </Button>
       </CardFooter>
     </Card>

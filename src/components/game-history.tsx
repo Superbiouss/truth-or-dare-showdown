@@ -75,7 +75,7 @@ export function GameHistory({ history, onBack }: GameHistoryProps) {
       <CardFooter>
         <Button onClick={onBack} className="w-full" variant="outline">
           <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Setup
+          Back to Welcome
         </Button>
       </CardFooter>
     </Card>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useGame } from "@/hooks/use-game";
+import { WelcomeScreen } from "@/components/welcome-screen";
 import { PlayerSetup } from "@/components/player-setup";
 import { CategorySelection } from "@/components/category-selection";
 import { GameScreen } from "@/components/game-screen";
@@ -20,6 +21,7 @@ export default function Home() {
     isTtsEnabled,
     gameHistory,
     isSuddenDeath,
+    handleGetStarted,
     handleStartGame,
     handleCategorySelect,
     handleTurnComplete,
@@ -27,13 +29,16 @@ export default function Home() {
     handlePlayAgain,
     handleShowHistory,
     handleBackToSetup,
+    handleBackToWelcome,
     setIsTtsEnabled,
   } = useGame();
 
   const renderScreen = () => {
     switch (screen) {
+      case 'welcome':
+        return <WelcomeScreen onGetStarted={handleGetStarted} />;
       case 'player-setup':
-        return <PlayerSetup onStart={handleStartGame} onShowHistory={handleShowHistory} />;
+        return <PlayerSetup onStart={handleStartGame} onShowHistory={handleShowHistory} onBack={handleBackToWelcome} />;
       case 'category-selection':
         return <CategorySelection onSelect={handleCategorySelect} onBack={handleBackToSetup} />;
       case 'game':
@@ -55,9 +60,9 @@ export default function Home() {
       case 'leaderboard':
         return <Leaderboard players={players} onPlayAgain={handlePlayAgain} />;
       case 'history':
-        return <GameHistory history={gameHistory} onBack={handleBackToSetup} />;
+        return <GameHistory history={gameHistory} onBack={handleBackToWelcome} />;
       default:
-        return <PlayerSetup onStart={handleStartGame} onShowHistory={handleShowHistory} />;
+        return <WelcomeScreen onGetStarted={handleGetStarted} />;
     }
   };
 

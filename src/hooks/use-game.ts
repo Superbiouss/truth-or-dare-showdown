@@ -20,7 +20,7 @@ type GameState = {
 };
 
 export function useGame() {
-  const [screen, setScreen] = useState<Screen>('player-setup');
+  const [screen, setScreen] = useState<Screen>('welcome');
   const [players, setPlayers] = useState<Player[]>([]);
   const [category, setCategory] = useState<GameCategory>('kids');
   const [intensity, setIntensity] = useState(1);
@@ -86,6 +86,10 @@ export function useGame() {
 
   const clearGameState = useCallback(() => {
     localStorage.removeItem(GAME_STATE_KEY);
+  }, []);
+
+  const handleGetStarted = useCallback(() => {
+    setScreen('player-setup');
   }, []);
 
   const handleStartGame = useCallback((newPlayers: Player[]) => {
@@ -173,7 +177,7 @@ export function useGame() {
     setCurrentRound(1);
     setCurrentPlayerIndex(0);
     setIsSuddenDeath(false);
-    setScreen('player-setup');
+    setScreen('welcome');
   }, [clearGameState]);
   
   const handleShowHistory = useCallback(() => {
@@ -182,6 +186,10 @@ export function useGame() {
 
   const handleBackToSetup = useCallback(() => {
     setScreen('player-setup');
+  }, []);
+
+  const handleBackToWelcome = useCallback(() => {
+    setScreen('welcome');
   }, []);
 
   return {
@@ -195,6 +203,7 @@ export function useGame() {
     isTtsEnabled,
     gameHistory,
     isSuddenDeath,
+    handleGetStarted,
     handleStartGame,
     handleCategorySelect,
     handleTurnComplete,
@@ -202,6 +211,7 @@ export function useGame() {
     handlePlayAgain,
     handleShowHistory,
     handleBackToSetup,
+    handleBackToWelcome,
     setIsTtsEnabled,
   };
 }
