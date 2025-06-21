@@ -17,6 +17,7 @@ export default function Home() {
   const [rounds, setRounds] = useState(5);
   const [currentRound, setCurrentRound] = useState(1);
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
+  const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const { toast } = useToast();
 
   const handleStartGame = (newPlayers: Player[]) => {
@@ -24,10 +25,11 @@ export default function Home() {
     setScreen('category-selection');
   };
 
-  const handleCategorySelect = (selectedCategory: GameCategory, selectedIntensity: number, selectedRounds: number) => {
+  const handleCategorySelect = (selectedCategory: GameCategory, selectedIntensity: number, selectedRounds: number, ttsEnabled: boolean) => {
     setCategory(selectedCategory);
     setIntensity(selectedIntensity);
     setRounds(selectedRounds);
+    setIsTtsEnabled(ttsEnabled);
     setCurrentRound(1);
     setCurrentPlayerIndex(0);
     setScreen('game');
@@ -97,6 +99,8 @@ export default function Home() {
             onEndGame={handleEndGame}
             rounds={rounds}
             currentRound={currentRound}
+            isTtsEnabled={isTtsEnabled}
+            setIsTtsEnabled={setIsTtsEnabled}
           />
         );
       case 'leaderboard':

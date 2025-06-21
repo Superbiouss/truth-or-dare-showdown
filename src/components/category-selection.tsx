@@ -9,15 +9,17 @@ import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Icons } from "@/components/icons";
 import { triggerVibration } from "@/lib/utils";
+import { Switch } from "@/components/ui/switch";
 
 interface CategorySelectionProps {
-  onSelect: (category: GameCategory, intensity: number, rounds: number) => void;
+  onSelect: (category: GameCategory, intensity: number, rounds: number, isTtsEnabled: boolean) => void;
 }
 
 export function CategorySelection({ onSelect }: CategorySelectionProps) {
   const [category, setCategory] = useState<GameCategory | null>(null);
   const [intensity, setIntensity] = useState(1);
   const [rounds, setRounds] = useState(5);
+  const [isTtsEnabled, setIsTtsEnabled] = useState(true);
 
   const handleCategorySelect = (selectedCategory: GameCategory) => {
     triggerVibration();
@@ -27,7 +29,7 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
   const handleStart = () => {
     if (category) {
       triggerVibration([100, 50, 100]);
-      onSelect(category, intensity, rounds);
+      onSelect(category, intensity, rounds, isTtsEnabled);
     }
   };
 
@@ -124,6 +126,23 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
             </div>
           </div>
         )}
+
+        <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                    <Label htmlFor="tts-mode">AI Announcer</Label>
+                    <p className="text-[0.8rem] text-muted-foreground">
+                        Hear prompts read aloud.
+                    </p>
+                </div>
+                <Switch
+                    id="tts-mode"
+                    checked={isTtsEnabled}
+                    onCheckedChange={setIsTtsEnabled}
+                />
+            </div>
+        </div>
+
       </CardContent>
       <CardFooter>
         <Button

@@ -24,14 +24,15 @@ interface GameScreenProps {
   onEndGame: () => void;
   rounds: number;
   currentRound: number;
+  isTtsEnabled: boolean;
+  setIsTtsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-export function GameScreen({ players, currentPlayer, category, intensity, onTurnComplete, onEndGame, rounds, currentRound }: GameScreenProps) {
+export function GameScreen({ players, currentPlayer, category, intensity, onTurnComplete, onEndGame, rounds, currentRound, isTtsEnabled, setIsTtsEnabled }: GameScreenProps) {
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [turnInProgress, setTurnInProgress] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [generatedPrompts, setGeneratedPrompts] = useState<string[]>([]);
-  const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const { toast } = useToast();
 
