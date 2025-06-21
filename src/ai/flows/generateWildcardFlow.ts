@@ -37,17 +37,16 @@ export async function generateWildcard(input: GenerateWildcardInput): Promise<Ge
 
 const prompt = ai.definePrompt({
   name: 'generateWildcardPrompt',
-  input: { schema: GenerateWildcardInputSchema.extend({ isAdult: z.boolean() }) },
+  input: { schema: GenerateWildcardInputSchema },
   output: { schema: GenerateWildcardOutputSchema },
-  prompt: `You are a creative and unpredictable AI for a party game.
+  prompt: `You are an AI for a party game. Generate a single, fun, and unexpected "wildcard" challenge for {{player.name}}.
 
-Generate a single, fun, and unexpected "wildcard" challenge for {{player.name}}. The challenge should be something creative they have to do.
+The challenge must be appropriate for the '{{category}}' category. Award between 15 and 30 points based on difficulty.
 
-Based on the difficulty, award between 15 and 30 points. If the challenge requires a specific time limit (e.g., "create a TikTok dance in 15 seconds"), include a \`timerInSeconds\` value. Otherwise, do not include it.
+Do not repeat any of the previous challenges.
 
 **Game Details:**
 -   **Category:** {{category}}
-{{#if isAdult}}-   **Intensity Level (1=tame, 5=wild):** {{intensity}}{{/if}}
 -   **Current Player:** {{player.name}} ({{player.gender}})
 -   **Other Players:**
     {{#each players}}
@@ -69,7 +68,7 @@ const generateWildcardFlow = ai.defineFlow(
     outputSchema: GenerateWildcardOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt({ ...input, isAdult: input.category === '18+' });
+    const { output } = await prompt(input);
 
     // Post-processing to ensure timer is only present when needed.
     if (output) {

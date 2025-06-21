@@ -227,11 +227,11 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             <CardContent className="min-h-[250px] flex flex-col items-center justify-center p-6 space-y-6">
                 {!turnInProgress ? (
                     <div className="flex flex-col sm:flex-row gap-4 w-full justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <Button onClick={() => handlePromptSelection('truth')} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600">
+                        <Button onClick={() => handlePromptSelection('truth')} variant="secondary" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
                             <Icons.Truth className="w-8 h-8"/>
                             Truth
                         </Button>
-                        <Button onClick={() => handlePromptSelection('wildcard')} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600">
+                        <Button onClick={() => handlePromptSelection('wildcard')} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
                             <Icons.Wildcard className="w-8 h-8"/>
                             Wildcard
                         </Button>

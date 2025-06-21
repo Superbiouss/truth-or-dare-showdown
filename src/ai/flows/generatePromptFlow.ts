@@ -38,17 +38,16 @@ export async function generatePrompt(input: GeneratePromptInput): Promise<Genera
 
 const prompt = ai.definePrompt({
   name: 'generatePrompt',
-  input: { schema: GeneratePromptInputSchema.extend({ isAdult: z.boolean() }) },
+  input: { schema: GeneratePromptInputSchema },
   output: { schema: GeneratePromptOutputSchema },
-  prompt: `You are a creative and witty AI for a game of Truth or Dare.
+  prompt: `You are an AI for a Truth or Dare game. Generate a short and creative '{{promptType}}' question for {{player.name}}.
 
-Generate a single, fun, and engaging '{{promptType}}' question for {{player.name}}.
+The question must be appropriate for the '{{category}}' category.
 
-The question should be short and surprising. If the dare requires a specific time limit (e.g., "stare at the wall for 30 seconds"), include a \`timerInSeconds\` value. Otherwise, do not include it.
+Do not repeat any of the previous prompts. Focus on being fun and surprising.
 
 **Game Details:**
 -   **Category:** {{category}}
-{{#if isAdult}}-   **Intensity Level (1=tame, 5=wild):** {{intensity}}{{/if}}
 -   **Current Player:** {{player.name}} ({{player.gender}})
 -   **Other Players:**
     {{#each players}}
@@ -70,7 +69,7 @@ const generatePromptFlow = ai.defineFlow(
     outputSchema: GeneratePromptOutputSchema,
   },
   async (input) => {
-    const { output } = await prompt({ ...input, isAdult: input.category === '18+' });
+    const { output } = await prompt(input);
     
     // Post-processing to ensure timer is only present when needed.
     if (output) {
