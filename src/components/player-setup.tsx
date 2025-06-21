@@ -76,14 +76,14 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
   };
 
   return (
-    <Card className="w-full max-w-md bg-card/30 backdrop-blur-lg border border-primary/20 shadow-xl">
+    <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl">Player Setup</CardTitle>
         <CardDescription>Add up to 4 players to start the game.</CardDescription>
       </CardHeader>
       <CardContent className="min-h-[200px] space-y-4">
         {players.map((player, index) => (
-          <div key={index} className="space-y-2 p-3 border border-border/50 rounded-lg animate-in fade-in-0 duration-500">
+          <div key={index} className="space-y-2 p-3 border rounded-lg animate-in fade-in-0 duration-500">
             <div className="flex items-center gap-2">
               <Label htmlFor={`player-${index}`} className="sr-only">Player {index + 1}</Label>
               <div className="relative flex-grow">

@@ -37,7 +37,7 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
   ];
 
   return (
-    <Card className="w-full max-w-md bg-card/30 backdrop-blur-lg border border-primary/20 shadow-xl">
+    <Card className="w-full max-w-md shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl">Choose Your Flavor</CardTitle>
         <CardDescription>Select a category to begin the game.</CardDescription>

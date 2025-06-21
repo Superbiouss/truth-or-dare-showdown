@@ -53,7 +53,7 @@ export function GameScreen({ players, category, intensity, onTurnComplete, onEnd
 
   return (
     <div className="w-full max-w-2xl text-center animate-in fade-in-0 duration-500">
-        <Card className="w-full bg-card/30 backdrop-blur-lg border border-primary/20 shadow-xl">
+        <Card className="w-full shadow-xl">
             <CardHeader>
                 <CardTitle className="text-3xl font-bold text-primary">
                     {currentPlayer.name}'s Turn

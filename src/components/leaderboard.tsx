@@ -55,7 +55,7 @@ export function Leaderboard({ players, onPlayAgain }: LeaderboardProps) {
           gravity={0.15}
         />
       )}
-      <Card className="w-full max-w-md bg-card/30 backdrop-blur-lg border border-primary/20 shadow-xl z-10 relative">
+      <Card className="w-full max-w-md shadow-xl z-10 relative">
         <CardHeader className="text-center">
           <div className="flex justify-center animate-in zoom-in-75 duration-500">
               <Icons.Award className="w-16 h-16 text-yellow-400" />
