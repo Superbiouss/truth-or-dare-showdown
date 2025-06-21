@@ -61,7 +61,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
           .filter(p => p.id !== currentPlayer.id)
           .map(({name, gender}) => ({name, gender}));
 
-        const result = await generatePrompt({
+        const promptPromise = generatePrompt({
             player: { name: currentPlayer.name, gender: currentPlayer.gender },
             category,
             intensity,
@@ -70,29 +70,45 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             previousPrompts: generatedPrompts.slice(-25),
         });
 
+        let speechPromise = null;
+        if (isTtsEnabled) {
+          speechPromise = promptPromise.then(result =>
+            generateSpeech({ text: result.prompt, gender: currentPlayer.gender })
+          ).catch(e => {
+            console.error("TTS generation failed:", e);
+            if (e instanceof Error && (e.message.includes('429') || e.message.includes('quota'))) {
+                toast({
+                    title: "AI Announcer Limit Reached",
+                    description: "The free daily limit for the AI voice has been reached. It will be available again tomorrow.",
+                    variant: "destructive"
+                });
+                setIsTtsEnabled(false);
+            } else {
+                toast({
+                    title: "AI Announcer Error",
+                    description: "Could not generate the voice prompt.",
+                    variant: "destructive"
+                });
+            }
+            return null; // Return null on speech failure
+          });
+        }
+        
+        const [result, speechResult] = await Promise.all([promptPromise, speechPromise]);
+        
         const promptText = result.prompt;
         const points = type === 'truth' ? 5 : 10;
         
-        if (isTtsEnabled) {
-            try {
-                const speechResult = await generateSpeech({
-                    text: promptText,
-                    gender: currentPlayer.gender,
-                });
-                if (audioPlayerRef.current) {
-                    audioPlayerRef.current.src = speechResult.audioDataUri;
-                    audioPlayerRef.current.play().catch(error => {
-                        console.error("Audio playback failed:", error);
-                        toast({
-                          title: "Audio Error",
-                          description: "Could not play announcer audio. Your browser might be blocking it.",
-                          variant: "destructive"
-                        })
-                    });
-                }
-            } catch (e) {
-                console.error("TTS generation failed:", e);
-            }
+        if (isTtsEnabled && speechResult && audioPlayerRef.current) {
+            audioPlayerRef.current.src = speechResult.audioDataUri;
+            audioPlayerRef.current.play().catch(error => {
+                console.error("Audio playback failed:", error);
+                toast({
+                  title: "Audio Error",
+                  description: "Could not play announcer audio. Your browser might be blocking it.",
+                  variant: "destructive"
+                })
+            });
         }
 
         setPrompt({ type, text: promptText, points, timerInSeconds: result.timerInSeconds });
@@ -120,36 +136,52 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
           .filter(p => p.id !== currentPlayer.id)
           .map(({name, gender}) => ({name, gender}));
         
-        const result = await generateWildcard({
+        const wildcardPromise = generateWildcard({
             player: { name: currentPlayer.name, gender: currentPlayer.gender },
             category,
             intensity,
             players: otherPlayers,
             previousPrompts: generatedPrompts.slice(-25),
         });
+        
+        let speechPromise = null;
+        if (isTtsEnabled) {
+          speechPromise = wildcardPromise.then(result =>
+            generateSpeech({ text: result.challenge, gender: currentPlayer.gender })
+          ).catch(e => {
+            console.error("TTS generation failed:", e);
+            if (e instanceof Error && (e.message.includes('429') || e.message.includes('quota'))) {
+                toast({
+                    title: "AI Announcer Limit Reached",
+                    description: "The free daily limit for the AI voice has been reached. It will be available again tomorrow.",
+                    variant: "destructive"
+                });
+                setIsTtsEnabled(false);
+            } else {
+                toast({
+                    title: "AI Announcer Error",
+                    description: "Could not generate the voice prompt.",
+                    variant: "destructive"
+                });
+            }
+            return null; // Return null on speech failure
+          });
+        }
+        
+        const [result, speechResult] = await Promise.all([wildcardPromise, speechPromise]);
 
         const challengeText = result.challenge;
 
-        if (isTtsEnabled) {
-             try {
-                const speechResult = await generateSpeech({
-                    text: challengeText,
-                    gender: currentPlayer.gender,
-                });
-                if (audioPlayerRef.current) {
-                    audioPlayerRef.current.src = speechResult.audioDataUri;
-                    audioPlayerRef.current.play().catch(error => {
-                        console.error("Audio playback failed:", error);
-                        toast({
-                          title: "Audio Error",
-                          description: "Could not play announcer audio. Your browser might be blocking it.",
-                          variant: "destructive"
-                        })
-                    });
-                }
-            } catch (e) {
-                console.error("TTS generation failed:", e);
-            }
+        if (isTtsEnabled && speechResult && audioPlayerRef.current) {
+            audioPlayerRef.current.src = speechResult.audioDataUri;
+            audioPlayerRef.current.play().catch(error => {
+                console.error("Audio playback failed:", error);
+                toast({
+                  title: "Audio Error",
+                  description: "Could not play announcer audio. Your browser might be blocking it.",
+                  variant: "destructive"
+                })
+            });
         }
 
         setPrompt({ type: 'wildcard', text: challengeText, points: result.points, timerInSeconds: result.timerInSeconds });
