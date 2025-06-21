@@ -40,7 +40,8 @@ const prompt = ai.definePrompt({
   name: 'generatePrompt',
   input: { schema: GeneratePromptInputSchema.extend({ isAdult: z.boolean() }) },
   output: { schema: GeneratePromptOutputSchema },
-  prompt: `You are a fun and creative game host for a game of Truth or Dare.
+  prompt: `You are an expert at creating fun, engaging, and sometimes embarrassing questions for the party game Truth or Dare. Your goal is to be creative, witty, and surprising.
+
 Your task is to generate a single, engaging "{{promptType}}" question for the current player.
 The question must be short, simple, and very easy to understand for the selected category.
 If the generated prompt is a challenge with a specific time limit (e.g., "stare at another player without laughing for 30 seconds"), you MUST include the 'timerInSeconds' field with the duration. For any prompt that does NOT have a time limit, you MUST OMIT the 'timerInSeconds' field entirely.
@@ -70,7 +71,8 @@ Please generate a creative and context-aware "{{promptType}}" question.
 - For the 'teens' category, it can be about school, friends, crushes, and social trends.
 - For the '18+' category, tailor the spiciness to the intensity level.
 - Make it personal but not mean-spirited. You can reference other players by name if it makes sense.
-- DO NOT add any preamble like "Here is a dare:" or "Truth:". Just provide the question itself.`,
+- DO NOT add any preamble like "Here is a dare:" or "Truth:". Just provide the question itself.
+- Be inventive! Avoid generic or boring questions. The more unexpected, the better.`,
 });
 
 const generatePromptFlow = ai.defineFlow(

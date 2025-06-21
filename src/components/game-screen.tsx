@@ -124,7 +124,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
 
     prefetchPrompts();
     // This effect runs only when a new player's turn starts.
-  }, [currentPlayer.id, players, category, intensity, toast]);
+  }, [currentPlayer.id, players, category, intensity, toast, generatedPrompts]);
 
   const speak = (text: string, gender: 'male' | 'female') => {
     if (!isTtsEnabled || typeof window === 'undefined' || !window.speechSynthesis || voices.length === 0) {
@@ -274,11 +274,11 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                     </div>
                 ) : !turnInProgress ? (
                     <div className="flex flex-col sm:flex-row gap-4 w-full justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.truth)} disabled={!prefetchedPrompts.truth} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.truth)} disabled={!prefetchedPrompts.truth} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600">
                             <Icons.Truth className="w-8 h-8"/>
                             Truth
                         </Button>
-                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.wildcard)} disabled={!prefetchedPrompts.wildcard} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-purple-600 hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600">
+                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.wildcard)} disabled={!prefetchedPrompts.wildcard} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600">
                             <Icons.Wildcard className="w-8 h-8"/>
                             Wildcard
                         </Button>
