@@ -9,28 +9,35 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription }
 import { useToast } from "@/hooks/use-toast";
 import { User, X, PlusCircle } from "lucide-react";
 import { triggerVibration } from "@/lib/utils";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface PlayerSetupProps {
   onStart: (players: Player[]) => void;
 }
 
 export function PlayerSetup({ onStart }: PlayerSetupProps) {
-  const [players, setPlayers] = useState<{ name: string }[]>([
-    { name: "" },
-    { name: "" },
+  const [players, setPlayers] = useState<{ name: string; gender: 'male' | 'female' }[]>([
+    { name: "", gender: 'male' },
+    { name: "", gender: 'male' },
   ]);
   const { toast } = useToast();
 
   const handleNameChange = (index: number, name: string) => {
     const newPlayers = [...players];
-    newPlayers[index] = { name };
+    newPlayers[index].name = name;
     setPlayers(newPlayers);
   };
+
+  const handleGenderChange = (index: number, gender: 'male' | 'female') => {
+    const newPlayers = [...players];
+    newPlayers[index].gender = gender;
+    setPlayers(newPlayers);
+  }
 
   const addPlayer = () => {
     triggerVibration();
     if (players.length < 4) {
-      setPlayers([...players, { name: "" }]);
+      setPlayers([...players, { name: "", gender: 'male' }]);
     } else {
         toast({
             title: "Max players reached",
@@ -63,6 +70,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
       id: index,
       name: p.name.trim(),
       score: 0,
+      gender: p.gender,
     }));
     onStart(newPlayers);
   };
@@ -75,29 +83,45 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
       </CardHeader>
       <CardContent className="min-h-[200px] space-y-4">
         {players.map((player, index) => (
-          <div key={index} className="flex items-center gap-2 animate-in fade-in-0 duration-500">
-            <Label htmlFor={`player-${index}`} className="sr-only">Player {index + 1}</Label>
-            <div className="relative flex-grow">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                id={`player-${index}`}
-                placeholder={`Player ${index + 1}'s Name`}
-                value={player.name}
-                onChange={(e) => handleNameChange(index, e.target.value)}
-                className="pl-10"
-              />
+          <div key={index} className="space-y-2 p-3 border border-border/50 rounded-lg animate-in fade-in-0 duration-500">
+            <div className="flex items-center gap-2">
+              <Label htmlFor={`player-${index}`} className="sr-only">Player {index + 1}</Label>
+              <div className="relative flex-grow">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  id={`player-${index}`}
+                  placeholder={`Player ${index + 1}'s Name`}
+                  value={player.name}
+                  onChange={(e) => handleNameChange(index, e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              {players.length > 2 && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removePlayer(index)}
+                  className="text-muted-foreground hover:text-destructive transition-colors"
+                  aria-label="Remove player"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              )}
             </div>
-            {players.length > 2 && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => removePlayer(index)}
-                className="text-muted-foreground hover:text-destructive transition-colors"
-                aria-label="Remove player"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            )}
+            <RadioGroup
+              value={player.gender}
+              onValueChange={(value) => handleGenderChange(index, value as 'male' | 'female')}
+              className="flex gap-4 pt-1"
+            >
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="male" id={`male-${index}`} />
+                <Label htmlFor={`male-${index}`}>Male</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="female" id={`female-${index}`} />
+                <Label htmlFor={`female-${index}`}>Female</Label>
+              </div>
+            </RadioGroup>
           </div>
         ))}
         {players.length < 4 && (

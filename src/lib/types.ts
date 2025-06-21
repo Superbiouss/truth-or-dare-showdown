@@ -2,6 +2,7 @@ export type Player = {
   id: number;
   name: string;
   score: number;
+  gender: 'male' | 'female';
 };
 
 export type GameCategory = 'kids' | 'teens' | '18+';
