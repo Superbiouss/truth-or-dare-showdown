@@ -227,7 +227,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             <CardContent className="min-h-[250px] flex flex-col items-center justify-center p-6 space-y-6">
                 {!turnInProgress ? (
                     <div className="flex flex-col sm:flex-row gap-4 w-full justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <Button onClick={() => handlePromptSelection('truth')} variant="outline" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                        <Button onClick={() => handlePromptSelection('truth')} variant="secondary" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
                             <Icons.Truth className="w-8 h-8"/>
                             Truth
                         </Button>
