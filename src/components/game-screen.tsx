@@ -76,22 +76,6 @@ export function GameScreen({ players, category, intensity, onTurnComplete, onEnd
             </CardContent>
         </Card>
 
-        <div className="mt-8 w-full">
-             <Card className="bg-card/30 backdrop-blur-lg border-primary/20">
-                <CardHeader className="p-4">
-                    <CardTitle className="text-xl text-center">Scoreboard</CardTitle>
-                </CardHeader>
-                <CardContent className="flex justify-center items-center gap-4 sm:gap-6 flex-wrap p-4 pt-0">
-                    {players.map((player) => (
-                        <div key={player.id} className="text-center p-3 rounded-lg bg-background/50 flex-1 min-w-[100px] max-w-[150px]">
-                            <p className="font-semibold truncate text-lg">{player.name}</p>
-                            <p className="text-3xl font-bold text-primary">{player.score}</p>
-                        </div>
-                    ))}
-                </CardContent>
-            </Card>
-        </div>
-
         <Button onClick={onEndGame} variant="ghost" className="mt-8">
             End Game
         </Button>
