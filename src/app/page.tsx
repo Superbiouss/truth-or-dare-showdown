@@ -20,6 +20,7 @@ export default function Home() {
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
+  const [isSuddenDeath, setIsSuddenDeath] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -56,29 +57,40 @@ export default function Home() {
     );
     setPlayers(updatedPlayers);
 
-    const nextPlayerIndex = (currentPlayerIndex + 1);
-    if (nextPlayerIndex >= players.length) { // Last player just finished their turn
-        if (currentRound >= rounds) {
-            const sortedPlayers = [...updatedPlayers].sort((a, b) => b.score - a.score);
-            const isTie = sortedPlayers.length > 1 && sortedPlayers[0].score > 0 && sortedPlayers[0].score === sortedPlayers[1].score;
+    const isRoundOver = (currentPlayerIndex + 1) >= players.length;
 
-            if (isTie) {
-                toast({
-                    title: "It's a Tie!",
-                    description: "3 tie-breaker rounds have been added to determine the winner.",
-                });
-                setRounds(prev => prev + 3);
-                setCurrentRound(prev => prev + 1);
-                setCurrentPlayerIndex(0);
-            } else {
-                handleEndGame(updatedPlayers);
-            }
+    if (isRoundOver) {
+      const isFinalRound = currentRound >= rounds;
+      if (isFinalRound) {
+        const sortedPlayers = [...updatedPlayers].sort((a, b) => b.score - a.score);
+        const topScore = sortedPlayers[0].score;
+        const potentialWinners = sortedPlayers.filter(p => p.score === topScore && p.score > 0);
+
+        if (potentialWinners.length > 1) {
+          // It's a tie, enter or continue Sudden Death
+          const tiedPlayerNames = potentialWinners.map(p => p.name).join(' and ');
+          toast({
+            title: "Sudden Death!",
+            description: `A tie between ${tiedPlayerNames}! One more round to decide the champion.`,
+          });
+          
+          setPlayers(potentialWinners); // Only tied players continue
+          setRounds(prev => prev + 1); // Add one more round
+          setCurrentRound(prev => prev + 1);
+          setCurrentPlayerIndex(0);
+          setIsSuddenDeath(true);
         } else {
-            setCurrentRound(prev => prev + 1);
-            setCurrentPlayerIndex(0);
+          // We have a clear winner or everyone has 0 points
+          handleEndGame(updatedPlayers);
         }
+      } else {
+        // Not the final round, start next round
+        setCurrentRound(prev => prev + 1);
+        setCurrentPlayerIndex(0);
+      }
     } else {
-        setCurrentPlayerIndex(nextPlayerIndex);
+      // Not the end of the round, move to next player
+      setCurrentPlayerIndex(prevIndex => prevIndex + 1);
     }
   };
 
@@ -109,6 +121,7 @@ export default function Home() {
     setRounds(5);
     setCurrentRound(1);
     setCurrentPlayerIndex(0);
+    setIsSuddenDeath(false);
     setScreen('player-setup');
   };
   
@@ -139,6 +152,7 @@ export default function Home() {
             currentRound={currentRound}
             isTtsEnabled={isTtsEnabled}
             setIsTtsEnabled={setIsTtsEnabled}
+            isSuddenDeath={isSuddenDeath}
           />
         );
       case 'leaderboard':

@@ -40,36 +40,38 @@ const prompt = ai.definePrompt({
   name: 'generatePrompt',
   input: { schema: GeneratePromptInputSchema.extend({ isAdult: z.boolean() }) },
   output: { schema: GeneratePromptOutputSchema },
-  prompt: `You are a creative assistant for the party game Truth or Dare. Your goal is to generate a single, witty, and surprising "{{promptType}}" question based on the provided context.
+  prompt: `You are an AI assistant that ONLY responds with a single, valid JSON object. Do not output markdown, text, or any characters before or after the JSON object.
 
-The question must be short, simple, and very easy to understand for the selected category.
+Your task is to generate a single, witty, and surprising "{{promptType}}" question for a party game. The question must be short and easy to understand.
 
-**IMPORTANT RULES:**
-1.  **JSON Output:** Your response MUST be a valid JSON object matching this schema: \`{ "prompt": "The generated question", "timerInSeconds": (number, optional) }\`.
-2.  **No Extra Text:** Do NOT add any preamble like "Here is a dare:" or "Truth:". Your entire output must be only the JSON object.
-3.  **Timer Logic:**
-    *   If the generated prompt is a challenge with a specific time limit (e.g., "stare at another player without laughing for 30 seconds"), you MUST include the 'timerInSeconds' field with the duration.
-    *   For any prompt that does NOT have a time limit, you MUST OMIT the 'timerInSeconds' field entirely.
-4.  **Be Inventive:** Avoid generic or boring questions. The more unexpected, the better.
-5.  **Avoid Repetition:** DO NOT generate any of the prompts from the \`previousPrompts\` list.
+The JSON object MUST conform to this Zod schema:
+\`{
+  "prompt": "z.string() // The generated truth or dare question.",
+  "timerInSeconds": "z.number().optional() // MUST be omitted unless the task has a specific time limit."
+}\`
+
+**INSTRUCTIONS:**
+1.  **Timed Tasks:** If the prompt is a challenge with a specific time limit (e.g., "stare at someone for 30 seconds"), you MUST include the 'timerInSeconds' field. For all other prompts, you MUST OMIT the 'timerInSeconds' field.
+2.  **Be Creative:** Avoid boring or generic questions. The more unexpected and fun, the better.
+3.  **Avoid Repetition:** Do NOT generate any of the prompts from the \`previousPrompts\` list provided in the context.
 
 **GAME CONTEXT:**
 -   **Prompt Type:** {{promptType}}
 -   **Category:** {{category}}
-{{#if isAdult}}-   **Intensity Level:** {{intensity}} (from 1=tame to 5=wild){{/if}}
+{{#if isAdult}}-   **Intensity Level (1=tame to 5=wild):** {{intensity}}{{/if}}
 -   **Current Player:** {{player.name}} ({{player.gender}})
 -   **Other Players:**
     {{#each players}}
     -   {{this.name}} ({{this.gender}})
     {{/each}}
 {{#if previousPrompts}}
--   **Previous Prompts (Do Not Use):**
+-   **Previously Used Prompts (Do Not Repeat):**
     {{#each previousPrompts}}
     -   "{{this}}"
     {{/each}}
 {{/if}}
 
-Generate the JSON for the "{{promptType}}" question now.`,
+Generate the JSON response now.`,
 });
 
 const generatePromptFlow = ai.defineFlow(

@@ -39,36 +39,39 @@ const prompt = ai.definePrompt({
   name: 'generateWildcardPrompt',
   input: { schema: GenerateWildcardInputSchema.extend({ isAdult: z.boolean() }) },
   output: { schema: GenerateWildcardOutputSchema },
-  prompt: `You are a wildly creative assistant for a party game. Your goal is to generate a single, engaging "Wildcard" challenge. A wildcard is NOT a truth or a dare, but a unique, fun, and surprising task.
+  prompt: `You are an AI assistant that ONLY responds with a single, valid JSON object. Do not output markdown, text, or any characters before or after the JSON object.
 
-The challenge must be short, simple, and very easy to understand for the selected category.
+Your task is to generate a "Wildcard" challenge for a party game. A wildcard is a unique, fun, and surprising task—NOT a truth or a dare.
 
-**IMPORTANT RULES:**
-1.  **JSON Output:** Your response MUST be a valid JSON object matching this schema: \`{ "challenge": "The challenge description", "points": (number, 15-30), "timerInSeconds": (number, optional) }\`.
-2.  **No Extra Text:** Do NOT add any preamble like "Wildcard:". Your entire output must be only the JSON object.
-3.  **Points:** Award points between 15 and 30 based on the challenge's difficulty.
-4.  **Timer Logic:**
-    *   If the generated challenge is a task with a specific time limit (e.g., "act like a chicken for 15 seconds"), you MUST include the 'timerInSeconds' field with the duration.
-    *   For any challenge that does NOT have a time limit, you MUST OMIT the 'timerInSeconds' field entirely.
-5.  **Be Creative:** Think outside the box. The goal is to surprise the players.
-6.  **Avoid Repetition:** DO NOT generate any of the challenges from the \`previousPrompts\` list.
+The JSON object MUST conform to this Zod schema:
+\`{
+  "challenge": "z.string() // The creative wildcard challenge.",
+  "points": "z.number().int().min(15).max(30) // Points for completion.",
+  "timerInSeconds": "z.number().optional() // MUST be omitted unless the task has a specific time limit."
+}\`
+
+**INSTRUCTIONS:**
+1.  **Points:** Award points between 15 and 30 based on the challenge's difficulty and creativity.
+2.  **Timed Tasks:** If the challenge has a specific time limit, you MUST include the 'timerInSeconds' field. For all other challenges, you MUST OMIT the 'timerInSeconds' field.
+3.  **Be Creative:** Think outside the box. The goal is to surprise the players with something fun and unexpected.
+4.  **Avoid Repetition:** Do NOT generate any of the challenges from the \`previousPrompts\` list provided in the context.
 
 **GAME CONTEXT:**
 -   **Category:** {{category}}
-{{#if isAdult}}-   **Intensity Level:** {{intensity}} (from 1=tame to 5=wild){{/if}}
+{{#if isAdult}}-   **Intensity Level (1=tame to 5=wild):** {{intensity}}{{/if}}
 -   **Current Player:** {{player.name}} ({{player.gender}})
 -   **Other Players:**
     {{#each players}}
     -   {{this.name}} ({{this.gender}})
     {{/each}}
 {{#if previousPrompts}}
--   **Previous Prompts (Do Not Use):**
+-   **Previously Used Prompts (Do Not Repeat):**
     {{#each previousPrompts}}
     -   "{{this}}"
     {{/each}}
 {{/if}}
 
-Generate the JSON for the Wildcard challenge now.`,
+Generate the JSON response now.`,
 });
 
 const generateWildcardFlow = ai.defineFlow(

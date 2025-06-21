@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Icons, AvatarIconKey } from "@/components/icons";
 import { triggerVibration, playTick, playTimesUp } from "@/lib/utils";
-import { generatePrompt } from "@/ai/flows/generatePromptFlow";
-import { generateWildcard } from "@/ai/flows/generateWildcardFlow";
+import { generatePrompt, GeneratePromptOutput } from "@/ai/flows/generatePromptFlow";
+import { generateWildcard, GenerateWildcardOutput } from "@/ai/flows/generateWildcardFlow";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -25,20 +25,22 @@ interface GameScreenProps {
   currentRound: number;
   isTtsEnabled: boolean;
   setIsTtsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
+  isSuddenDeath: boolean;
 }
 
 type PrefetchedPrompts = {
-  truth: Prompt | null;
-  dare: Prompt | null;
-  wildcard: Prompt | null;
+  truth: GeneratePromptOutput | null;
+  dare: GeneratePromptOutput | null;
+  wildcard: GenerateWildcardOutput | null;
 };
 
-export function GameScreen({ players, currentPlayer, category, intensity, onTurnComplete, onEndGame, rounds, currentRound, isTtsEnabled, setIsTtsEnabled }: GameScreenProps) {
+export function GameScreen({ players, currentPlayer, category, intensity, onTurnComplete, onEndGame, rounds, currentRound, isTtsEnabled, setIsTtsEnabled, isSuddenDeath }: GameScreenProps) {
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [turnInProgress, setTurnInProgress] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [generatedPrompts, setGeneratedPrompts] = useState<string[]>([]);
   const [prefetchedPrompts, setPrefetchedPrompts] = useState<PrefetchedPrompts>({ truth: null, dare: null, wildcard: null });
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
 
   // Timer state
   const [timeLeft, setTimeLeft] = useState<number | null>(null);
@@ -46,34 +48,12 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
 
-  // Web Speech API state
-  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
-  
   const { toast } = useToast();
 
   useEffect(() => {
     // Initialize AudioContext on the client for timer sounds
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
-    }
-    // Load voices for Web Speech API
-    const loadVoices = () => {
-        if (typeof window !== 'undefined' && window.speechSynthesis) {
-            const availableVoices = window.speechSynthesis.getVoices();
-            if (availableVoices.length > 0) {
-                setVoices(availableVoices);
-            }
-        }
-    };
-    loadVoices();
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.onvoiceschanged = loadVoices;
-    }
-    return () => {
-        if (typeof window !== 'undefined' && window.speechSynthesis) {
-            window.speechSynthesis.cancel();
-            window.speechSynthesis.onvoiceschanged = null;
-        }
     }
   }, []);
 
@@ -107,56 +87,54 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
         ]);
 
         const newPrefetchedPrompts = {
-          truth: { type: 'truth' as const, text: truthResult.prompt, points: 5, timerInSeconds: truthResult.timerInSeconds },
-          dare: { type: 'dare' as const, text: dareResult.prompt, points: 10, timerInSeconds: dareResult.timerInSeconds },
-          wildcard: { type: 'wildcard' as const, text: wildcardResult.challenge, points: wildcardResult.points, timerInSeconds: wildcardResult.timerInSeconds },
+          truth: truthResult,
+          dare: dareResult,
+          wildcard: wildcardResult,
         };
         
         setPrefetchedPrompts(newPrefetchedPrompts);
 
-      } catch (e) {
+      } catch (e: any) {
         console.error(e);
-        toast({ title: "Oh no!", description: "The AI is having trouble coming up with ideas. Please try again later.", variant: "destructive" });
+        let description = "The AI is having trouble coming up with ideas. Please try again later.";
+        if (e.message && e.message.includes('429')) {
+          description = "The daily limit for the AI announcer has been reached. The feature has been disabled for now.";
+          setIsTtsEnabled(false);
+        }
+        toast({ title: "Oh no!", description, variant: "destructive" });
+        // Set a fallback prompt so the game can continue
+        setPrefetchedPrompts({
+          truth: { prompt: "Tell a truth." },
+          dare: { prompt: "Do a dare." },
+          wildcard: { challenge: "Challenge!", points: 20 },
+        });
       } finally {
         setIsLoading(false);
       }
     };
 
-    prefetchPrompts();
-    // This effect runs only when a new player's turn starts.
-  }, [currentPlayer.id, players, category, intensity, toast, generatedPrompts]);
-
-  const speak = (text: string, gender: 'male' | 'female') => {
-    if (!isTtsEnabled || typeof window === 'undefined' || !window.speechSynthesis || voices.length === 0) {
-        return;
+    if (currentPlayer) {
+      prefetchPrompts();
     }
+  }, [currentPlayer?.id, players, category, intensity, toast, generatedPrompts]);
+
+  const handlePromptSelection = (type: 'truth' | 'dare' | 'wildcard') => {
+    triggerVibration();
+    let selectedPrompt: Prompt | null = null;
     
-    window.speechSynthesis.cancel(); // Stop any previous speech
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    
-    let selectedVoice = null;
-    // We want the opposite gender voice for the announcer
-    if (gender === 'female') { // Find a male voice
-        selectedVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google US English')) || 
-                        voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('male'));
-    } else { // Find a female voice
-        selectedVoice = voices.find(v => v.lang.startsWith('en') && v.name.includes('Google UK English Female')) ||
-                        voices.find(v => v.lang.startsWith('en') && v.name.toLowerCase().includes('female'));
+    if (type === 'truth' && prefetchedPrompts.truth) {
+      const { prompt, timerInSeconds } = prefetchedPrompts.truth;
+      selectedPrompt = { type: 'truth', text: prompt, points: 5, timerInSeconds };
+    } else if (type === 'dare' && prefetchedPrompts.dare) {
+      const { prompt, timerInSeconds } = prefetchedPrompts.dare;
+      selectedPrompt = { type: 'dare', text: prompt, points: 10, timerInSeconds };
+    } else if (type === 'wildcard' && prefetchedPrompts.wildcard) {
+      const { challenge, points, timerInSeconds } = prefetchedPrompts.wildcard;
+      selectedPrompt = { type: 'wildcard', text: challenge, points, timerInSeconds };
     }
 
-    utterance.voice = selectedVoice || voices.find(v => v.default && v.lang.startsWith('en')) || voices[0];
-    utterance.rate = 0.95;
-    utterance.pitch = 1.0;
-    
-    window.speechSynthesis.speak(utterance);
-  }
-  
-  const handlePromptSelection = (selectedPrompt: Prompt | null) => {
     if (!selectedPrompt) return;
 
-    triggerVibration();
-    speak(selectedPrompt.text, currentPlayer.gender);
     setPrompt(selectedPrompt);
     
     if (selectedPrompt.timerInSeconds) {
@@ -168,9 +146,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   
   const clearTurnState = () => {
     setPrompt(null);
-    if (typeof window !== 'undefined' && window.speechSynthesis) {
-        window.speechSynthesis.cancel();
-    }
+    setAudio(null);
     setTurnInProgress(false);
     // Clear timer state
     setIsTimerRunning(false);
@@ -240,6 +216,15 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
     };
   }, [isTimerRunning, timeLeft]);
   
+  if (!currentPlayer) {
+    return (
+        <div className="flex flex-col items-center justify-center min-h-[176px] gap-4">
+            <Loader2 className="w-12 h-12 animate-spin text-primary" />
+            <p className="text-muted-foreground">Loading next round...</p>
+        </div>
+    );
+  }
+
   const PlayerAvatar = Icons[currentPlayer.avatar as AvatarIconKey];
   const TtsIcon = isTtsEnabled ? Icons.Volume2 : Icons.VolumeX;
 
@@ -253,7 +238,11 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                             <PlayerAvatar className="w-10 h-10" />
                             {currentPlayer.name}'s Turn
                         </CardTitle>
-                        <CardDescription>Round {currentRound} of {rounds}</CardDescription>
+                        {isSuddenDeath ? (
+                          <Badge className="mt-2 text-base" variant="destructive">SUDDEN DEATH</Badge>
+                        ) : (
+                          <CardDescription>Round {currentRound} of {rounds}</CardDescription>
+                        )}
                     </div>
                     <div className="flex items-center space-x-2 pt-2">
                         <TtsIcon className="w-5 h-5 text-muted-foreground" />
@@ -274,15 +263,15 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                     </div>
                 ) : !turnInProgress ? (
                     <div className="flex flex-col sm:flex-row gap-4 w-full justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.truth)} disabled={!prefetchedPrompts.truth} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600">
+                        <Button onClick={() => handlePromptSelection('truth')} disabled={!prefetchedPrompts.truth} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-blue-600 hover:bg-blue-700 text-white dark:bg-blue-500 dark:hover:bg-blue-600">
                             <Icons.Truth className="w-8 h-8"/>
                             Truth
                         </Button>
-                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.wildcard)} disabled={!prefetchedPrompts.wildcard} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600">
+                        <Button onClick={() => handlePromptSelection('wildcard')} disabled={!prefetchedPrompts.wildcard} className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95 bg-purple-600 hover:bg-purple-700 text-white dark:bg-purple-500 dark:hover:bg-purple-600">
                             <Icons.Wildcard className="w-8 h-8"/>
                             Wildcard
                         </Button>
-                        <Button onClick={() => handlePromptSelection(prefetchedPrompts.dare)} disabled={!prefetchedPrompts.dare} variant="destructive" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                        <Button onClick={() => handlePromptSelection('dare')} disabled={!prefetchedPrompts.dare} variant="destructive" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
                             <Icons.Dare className="w-8 h-8" />
                             Dare
                         </Button>
