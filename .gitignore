@@ -4,6 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
+.yarn/install-state.gz
 
 # testing
 /coverage
@@ -26,16 +27,18 @@ yarn-error.log*
 pnpm-debug.log*
 
 # local env files
-.env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
 
-# genkit
-/.genkit
-/genkit.log
+# vercel
+.vercel
 
-# firebase
-/.firebase
-firebase-debug.log
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# genkit
+.genkit/
+.genkit-cache.json
