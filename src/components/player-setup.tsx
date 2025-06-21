@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { User, Users } from "lucide-react";
+import { triggerVibration } from "@/lib/utils";
 
 interface PlayerSetupProps {
   onStart: (players: Player[]) => void;
@@ -19,6 +20,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
   const { toast } = useToast();
 
   const handleNumPlayerSelect = (num: number) => {
+    triggerVibration();
     setNumPlayers(num);
     setPlayerNames(Array(num).fill(""));
   };
@@ -30,6 +32,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
   };
 
   const handleStartGame = () => {
+    triggerVibration();
     if (playerNames.some((name) => name.trim() === "")) {
       toast({
         title: "Incomplete Setup",
@@ -61,12 +64,12 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
       </CardHeader>
       <CardContent className="min-h-[200px]">
         {numPlayers === null ? (
-          <div className="flex justify-around items-center pt-8">
+          <div className="flex justify-around items-center pt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
              {playerCounts.map((num) => (
                 <Button
                     key={num}
                     variant="outline"
-                    className="w-24 h-24 flex-col gap-2 text-lg"
+                    className="w-24 h-24 flex-col gap-2 text-lg transition-transform transform-gpu hover:scale-105 active:scale-95"
                     onClick={() => handleNumPlayerSelect(num)}
                 >
                     <Users />
@@ -91,7 +94,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
                 </div>
               </div>
             ))}
-             <Button variant="link" onClick={() => setNumPlayers(null)}>
+             <Button variant="link" onClick={() => { triggerVibration(); setNumPlayers(null); }}>
                 Back
             </Button>
           </div>

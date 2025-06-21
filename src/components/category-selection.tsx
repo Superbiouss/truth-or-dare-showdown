@@ -8,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Icons } from "@/components/icons";
+import { triggerVibration } from "@/lib/utils";
 
 interface CategorySelectionProps {
   onSelect: (category: GameCategory, intensity: number) => void;
@@ -18,11 +19,13 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
   const [intensity, setIntensity] = useState(1);
 
   const handleCategorySelect = (selectedCategory: GameCategory) => {
+    triggerVibration();
     setCategory(selectedCategory);
   };
 
   const handleStart = () => {
     if (category) {
+      triggerVibration([100, 50, 100]);
       onSelect(category, intensity);
     }
   };
@@ -48,7 +51,7 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
                   <AlertDialogTrigger asChild>
                     <Button
                       variant={category === cat.name ? "default" : "outline"}
-                      className="w-full h-24 flex flex-col gap-2"
+                      className="w-full h-24 flex flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95"
                       onClick={() => handleCategorySelect(cat.name)}
                     >
                       <cat.icon className="w-8 h-8"/>
@@ -63,8 +66,8 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel onClick={() => setCategory(null)}>Go Back</AlertDialogCancel>
-                      <AlertDialogAction>I Confirm</AlertDialogAction>
+                      <AlertDialogCancel onClick={() => { triggerVibration(); setCategory(null); }}>Go Back</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => triggerVibration()}>I Confirm</AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
                 </AlertDialog>
@@ -74,7 +77,7 @@ export function CategorySelection({ onSelect }: CategorySelectionProps) {
               <Button
                 key={cat.name}
                 variant={category === cat.name ? "default" : "outline"}
-                className="w-full h-24 flex flex-col gap-2"
+                className="w-full h-24 flex flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95"
                 onClick={() => handleCategorySelect(cat.name)}
               >
                 <cat.icon className="w-8 h-8"/>
