@@ -37,12 +37,16 @@ export async function generatePrompt(input: GeneratePromptInput): Promise<Genera
   return generatePromptFlow(input);
 }
 
-const promptTemplate = `You are an AI for a Truth or Dare game. Generate a short and creative '{{promptType}}' question for {{player.name}}.
+const promptTemplate = `You are an AI for a Truth or Dare game. Your primary goal is to generate a short, creative, and engaging '{{promptType}}' question for {{player.name}}.
+
+**Key Requirement: Make it TRENDY & RELATABLE.**
+To ensure the game feels current and exciting, you MUST base the prompt on recent events or modern themes. Be specific and creative in how you use them. Good sources of inspiration include:
+- **Trending Social Media Challenges:** Think of popular challenges on TikTok, Instagram, or other platforms.
+- **Current Pop Culture:** Reference recent movies, viral TV shows (like on Netflix or HBO), popular music artists, or celebrity news.
+- **Internet Memes & Slang:** Weave in a popular, recent meme or use slang that the current generation would understand.
+- **Modern Social Situations:** Create scenarios related to dating apps, group chats, streaming services, or online gaming.
 
 The question must be appropriate for the '{{category}}' category.
-
-To make the game exciting and up-to-date, incorporate current events, trending topics, social media challenges, or modern pop culture references.
-
 Do not repeat any of the previous prompts. Focus on being fun and surprising.
 
 **Game Details:**
@@ -62,10 +66,14 @@ Do not repeat any of the previous prompts. Focus on being fun and surprising.
 
 const extremePromptTemplate = `You are an AI for an adults-only Truth or Dare game. The intensity is set to the maximum (5/5). Generate a truly extreme, wild, and potentially shocking '{{promptType}}' question for {{player.name}}. Do not hold back.
 
+**Key Requirement: Make it TRENDY, RELATABLE, and EDGY.**
+To ensure the game feels current and shocking, you MUST base the prompt on recent events or modern themes, but push them to the limit. Good sources of inspiration include:
+- **Trending Social Media Challenges:** Find the most controversial or risqué challenges and amplify them.
+- **Current Pop Culture:** Reference adult-themed movies (R-rated), explicit TV shows (like on HBO), or scandalous celebrity news.
+- **Internet Memes & Slang:** Use edgy, dark humor memes or slang in a provocative way.
+- **Modern Social Situations:** Create scenarios related to the wild side of dating apps, group chats, or nightlife.
+
 The question must be appropriate for the '18+' category at its most intense level.
-
-To make the game exciting and up-to-date, incorporate current events, trending topics, social media challenges, or modern pop culture references.
-
 Do not repeat any of the previous prompts. Focus on being shocking and edgy.
 
 **Game Details:**

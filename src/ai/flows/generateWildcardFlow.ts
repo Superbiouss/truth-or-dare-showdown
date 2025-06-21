@@ -36,13 +36,17 @@ export async function generateWildcard(input: GenerateWildcardInput): Promise<Ge
   return generateWildcardFlow(input);
 }
 
-const promptTemplate = `You are an AI for a party game. Generate a single, fun, and unexpected "wildcard" challenge for {{player.name}}.
+const promptTemplate = `You are an AI for a party game. Your primary goal is to generate a single, fun, and unexpected "wildcard" challenge for {{player.name}}.
+
+**Key Requirement: Make it TRENDY & RELATABLE.**
+To ensure the game feels current and exciting, you MUST base the challenge on recent events or modern themes. Be specific and creative in how you use them. Good sources of inspiration include:
+- **Trending Social Media Challenges:** Think of popular challenges on TikTok, Instagram, or other platforms.
+- **Current Pop Culture:** Reference recent movies, viral TV shows (like on Netflix or HBO), popular music artists, or celebrity news.
+- **Internet Memes & Slang:** Weave in a popular, recent meme or use slang that the current generation would understand.
+- **Modern Social Situations:** Create scenarios related to dating apps, group chats, streaming services, or online gaming.
 
 The challenge must be appropriate for the '{{category}}' category. Award between 15 and 30 points based on difficulty.
-
-To make the game exciting and up-to-date, incorporate current events, trending topics, social media challenges, or modern pop culture references.
-
-Do not repeat any of the previous challenges.
+Do not repeat any of the previous challenges. Focus on being fun and surprising.
 
 **Game Details:**
 -   **Category:** {{category}}
@@ -61,10 +65,14 @@ Do not repeat any of the previous challenges.
 
 const extremeWildcardPromptTemplate = `You are an AI for an adults-only party game. Generate a single, truly extreme, wild, and potentially shocking "wildcard" challenge for {{player.name}}. The intensity is set to the maximum (5/5), so do not hold back.
 
+**Key Requirement: Make it TRENDY, RELATABLE, and EDGY.**
+To ensure the game feels current and shocking, you MUST base the challenge on recent events or modern themes, but push them to the limit. Good sources of inspiration include:
+- **Trending Social Media Challenges:** Find the most controversial or risqué challenges and amplify them.
+- **Current Pop Culture:** Reference adult-themed movies (R-rated), explicit TV shows (like on HBO), or scandalous celebrity news.
+- **Internet Memes & Slang:** Use edgy, dark humor memes or slang in a provocative way.
+- **Modern Social Situations:** Create scenarios related to the wild side of dating apps, group chats, or nightlife.
+
 The challenge must be appropriate for the '18+' category at its most intense. Award between 15 and 30 points based on difficulty.
-
-To make the game exciting and up-to-date, incorporate current events, trending topics, social media challenges, or modern pop culture references.
-
 Do not repeat any of the previous challenges. Focus on being edgy and surprising.
 
 **Game Details:**
