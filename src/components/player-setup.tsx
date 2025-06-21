@@ -47,7 +47,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
   };
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md bg-card/30 backdrop-blur-lg border border-primary/20 shadow-xl">
       <CardHeader>
         <CardTitle className="text-2xl">Player Setup</CardTitle>
         <CardDescription>Add at least 2 players to start the showdown!</CardDescription>
@@ -90,7 +90,7 @@ export function PlayerSetup({ onStart }: PlayerSetupProps) {
           <h3 className="font-medium">Players Joined:</h3>
           <ul className="space-y-2">
             {players.map((player) => (
-              <li key={player.id} className="flex items-center justify-between p-2 rounded-md bg-secondary">
+              <li key={player.id} className="flex items-center justify-between p-2 rounded-md bg-secondary/50">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
                   <span>{player.name}</span>

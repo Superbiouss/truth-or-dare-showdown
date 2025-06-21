@@ -15,7 +15,7 @@ export function Leaderboard({ players, onPlayAgain }: LeaderboardProps) {
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full max-w-md bg-card/30 backdrop-blur-lg border border-primary/20 shadow-xl">
       <CardHeader className="text-center">
         <div className="flex justify-center">
             <Icons.Award className="w-16 h-16 text-yellow-400" />
