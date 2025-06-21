@@ -20,7 +20,6 @@ export default function Home() {
     currentPlayer,
     isTtsEnabled,
     gameHistory,
-    isSuddenDeath,
     handleGetStarted,
     handleStartGame,
     handleCategorySelect,
@@ -54,7 +53,6 @@ export default function Home() {
             currentRound={currentRound}
             isTtsEnabled={isTtsEnabled}
             setIsTtsEnabled={setIsTtsEnabled}
-            isSuddenDeath={isSuddenDeath}
           />
         );
       case 'leaderboard':

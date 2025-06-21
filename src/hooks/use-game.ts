@@ -16,7 +16,6 @@ type GameState = {
   currentRound: number;
   currentPlayerIndex: number;
   isTtsEnabled: boolean;
-  isSuddenDeath: boolean;
 };
 
 export function useGame() {
@@ -29,7 +28,6 @@ export function useGame() {
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [isTtsEnabled, setIsTtsEnabled] = useState(true);
   const [gameHistory, setGameHistory] = useState<GameResult[]>([]);
-  const [isSuddenDeath, setIsSuddenDeath] = useState(false);
   const { toast } = useToast();
 
   const currentPlayer = players[currentPlayerIndex];
@@ -54,7 +52,6 @@ export function useGame() {
             setCurrentRound(savedState.currentRound);
             setCurrentPlayerIndex(savedState.currentPlayerIndex);
             setIsTtsEnabled(savedState.isTtsEnabled);
-            setIsSuddenDeath(savedState.isSuddenDeath);
             toast({
                 title: "Game Resumed",
                 description: "We've picked up where you left off!",
@@ -78,11 +75,10 @@ export function useGame() {
         currentRound,
         currentPlayerIndex,
         isTtsEnabled,
-        isSuddenDeath,
       };
       localStorage.setItem(GAME_STATE_KEY, JSON.stringify(gameState));
     }
-  }, [screen, players, category, intensity, rounds, currentRound, currentPlayerIndex, isTtsEnabled, isSuddenDeath]);
+  }, [screen, players, category, intensity, rounds, currentRound, currentPlayerIndex, isTtsEnabled]);
 
   const clearGameState = useCallback(() => {
     localStorage.removeItem(GAME_STATE_KEY);
@@ -140,25 +136,7 @@ export function useGame() {
     if (isRoundOver) {
       const isFinalRound = currentRound >= rounds;
       if (isFinalRound) {
-        const sortedPlayers = [...updatedPlayers].sort((a, b) => b.score - a.score);
-        const topScore = sortedPlayers[0].score;
-        const potentialWinners = sortedPlayers.filter(p => p.score === topScore && p.score > 0);
-
-        if (potentialWinners.length > 1) {
-          const tiedPlayerNames = potentialWinners.map(p => p.name).join(' and ');
-          toast({
-            title: "Sudden Death!",
-            description: `A tie between ${tiedPlayerNames}! One more round to decide the champion.`,
-          });
-          
-          setPlayers(potentialWinners);
-          setRounds(prev => prev + 1);
-          setCurrentRound(prev => prev + 1);
-          setCurrentPlayerIndex(0);
-          setIsSuddenDeath(true);
-        } else {
-          handleEndGame(updatedPlayers);
-        }
+        handleEndGame(updatedPlayers);
       } else {
         setCurrentRound(prev => prev + 1);
         setCurrentPlayerIndex(0);
@@ -166,7 +144,7 @@ export function useGame() {
     } else {
       setCurrentPlayerIndex(prevIndex => prevIndex + 1);
     }
-  }, [players, currentPlayerIndex, currentRound, rounds, handleEndGame, toast]);
+  }, [players, currentPlayerIndex, currentRound, rounds, handleEndGame]);
 
   const handlePlayAgain = useCallback(() => {
     clearGameState();
@@ -176,7 +154,6 @@ export function useGame() {
     setRounds(5);
     setCurrentRound(1);
     setCurrentPlayerIndex(0);
-    setIsSuddenDeath(false);
     setScreen('welcome');
   }, [clearGameState]);
   
@@ -202,7 +179,6 @@ export function useGame() {
     currentPlayer,
     isTtsEnabled,
     gameHistory,
-    isSuddenDeath,
     handleGetStarted,
     handleStartGame,
     handleCategorySelect,

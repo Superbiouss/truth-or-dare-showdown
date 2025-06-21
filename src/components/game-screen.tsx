@@ -25,7 +25,6 @@ interface GameScreenProps {
   currentRound: number;
   isTtsEnabled: boolean;
   setIsTtsEnabled: React.Dispatch<React.SetStateAction<boolean>>;
-  isSuddenDeath: boolean;
 }
 
 // Use the browser's built-in speech synthesis for a reliable, free TTS experience
@@ -39,7 +38,7 @@ const speak = (text: string) => {
     window.speechSynthesis.speak(utterance);
 };
 
-export function GameScreen({ players, currentPlayer, category, intensity, onTurnComplete, onEndGame, rounds, currentRound, isTtsEnabled, setIsTtsEnabled, isSuddenDeath }: GameScreenProps) {
+export function GameScreen({ players, currentPlayer, category, intensity, onTurnComplete, onEndGame, rounds, currentRound, isTtsEnabled, setIsTtsEnabled }: GameScreenProps) {
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [turnInProgress, setTurnInProgress] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -207,11 +206,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                             <PlayerAvatar className="w-10 h-10" />
                             {currentPlayer.name}'s Turn
                         </CardTitle>
-                        {isSuddenDeath ? (
-                          <Badge className="mt-2 text-base" variant="destructive">SUDDEN DEATH</Badge>
-                        ) : (
-                          <CardDescription>Round {currentRound} of {rounds}</CardDescription>
-                        )}
+                        <CardDescription>Round {currentRound} of {rounds}</CardDescription>
                     </div>
                     <div className="flex items-center space-x-2 pt-2">
                         <TtsIcon className="w-5 h-5 text-muted-foreground" />
@@ -227,7 +222,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
             <CardContent className="min-h-[250px] flex flex-col items-center justify-center p-6 space-y-6">
                 {!turnInProgress ? (
                     <div className="flex flex-col sm:flex-row gap-4 w-full justify-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <Button onClick={() => handlePromptSelection('truth')} variant="secondary" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
+                        <Button onClick={() => handlePromptSelection('truth')} variant="outline" className="w-full sm:w-48 h-24 text-2xl flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95">
                             <Icons.Truth className="w-8 h-8"/>
                             Truth
                         </Button>
