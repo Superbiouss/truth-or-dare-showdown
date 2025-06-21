@@ -70,6 +70,17 @@ const generateWildcardFlow = ai.defineFlow(
   },
   async (input) => {
     const { output } = await prompt({ ...input, isAdult: input.category === '18+' });
+
+    // Post-processing to ensure timer is only present when needed.
+    if (output) {
+        // Check if the prompt text explicitly mentions a time duration.
+        const hasTimeMention = /second|minute/i.test(output.challenge);
+        // If there's no time mention but the AI included a timer, remove it.
+        if (!hasTimeMention && typeof output.timerInSeconds === 'number') {
+            delete output.timerInSeconds;
+        }
+    }
+    
     return output!;
   }
 );
