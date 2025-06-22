@@ -8,6 +8,8 @@ import { GameScreen } from "@/components/game-screen";
 import { Leaderboard } from "@/components/leaderboard";
 import { GameHistory } from "@/components/game-history";
 import { Icons } from "@/components/icons";
+import { ThemeCustomizer } from "@/components/theme-customizer";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Home() {
   const {
@@ -66,11 +68,17 @@ export default function Home() {
 
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center p-4 sm:p-8">
-      <header className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-start items-center w-full">
+      <header className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center w-full">
         <div className="flex items-center gap-2 text-foreground/80">
           <Icons.Logo />
           <h1 className="font-bold text-lg hidden sm:block">Truth or Dare Showdown</h1>
         </div>
+        {screen === 'welcome' && (
+          <div className="flex items-center gap-2">
+            <ThemeCustomizer />
+            <ThemeToggle />
+          </div>
+        )}
       </header>
       <div
         key={screen}
