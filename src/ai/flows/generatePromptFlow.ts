@@ -39,13 +39,6 @@ export async function generatePrompt(input: GeneratePromptInput): Promise<Genera
 
 const promptTemplate = `You are an AI for a Truth or Dare game. Your primary goal is to generate a very short (1-2 sentences), creative, and engaging '{{promptType}}' question for {{player.name}}.
 
-**Key Requirement: Make it TRENDY & RELATABLE.**
-To ensure the game feels current and exciting, you MUST base the prompt on recent events or modern themes. Be specific and creative in how you use them. Good sources of inspiration include:
-- **Trending Social Media Challenges:** Think of popular challenges on TikTok, Instagram, or other platforms.
-- **Current Pop Culture:** Reference recent movies, viral TV shows (like on Netflix or HBO), popular music artists, or celebrity news.
-- **Internet Memes & Slang:** Weave in a popular, recent meme or use slang that the current generation would understand.
-- **Modern Social Situations:** Create scenarios related to dating apps, group chats, streaming services, or online gaming.
-
 The question must be appropriate for the '{{category}}' category.
 Do not repeat any of the previous prompts. Focus on being fun and surprising.
 
@@ -65,13 +58,6 @@ Do not repeat any of the previous prompts. Focus on being fun and surprising.
 `;
 
 const extremePromptTemplate = `You are an AI for an adults-only Truth or Dare game. The intensity is set to the maximum (5/5). Generate a very short (1-2 sentences), truly extreme, wild, and potentially shocking '{{promptType}}' question for {{player.name}}. Do not hold back.
-
-**Key Requirement: Make it TRENDY, RELATABLE, and EDGY.**
-To ensure the game feels current and shocking, you MUST base the prompt on recent events or modern themes, but push them to the limit. Good sources of inspiration include:
-- **Trending Social Media Challenges:** Find the most controversial or risqué challenges and amplify them.
-- **Current Pop Culture:** Reference adult-themed movies (R-rated), explicit TV shows (like on HBO), or scandalous celebrity news.
-- **Internet Memes & Slang:** Use edgy, dark humor memes or slang in a provocative way.
-- **Modern Social Situations:** Create scenarios related to the wild side of dating apps, group chats, or nightlife.
 
 The question must be appropriate for the '18+' category at its most intense level.
 Do not repeat any of the previous prompts. Focus on being shocking and edgy.
