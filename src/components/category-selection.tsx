@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -10,11 +11,50 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Icons } from "@/components/icons";
 import { triggerVibration } from "@/lib/utils";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft } from "lucide-react";
 
 interface CategorySelectionProps {
   onSelect: (category: GameCategory, intensity: number, rounds: number, isTtsEnabled: boolean) => void;
   onBack: () => void;
+}
+
+function AdultCategoryDialog({ onConfirm, onCancel, children }: { onConfirm: () => void, onCancel: () => void, children: React.ReactNode }) {
+    const [isConfirmed, setIsConfirmed] = useState(false);
+
+    return (
+        <AlertDialog>
+            <AlertDialogTrigger asChild>
+                {children}
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        This category contains mature themes. Please confirm that all players are 18 years of age or older and consent to playing.
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <div className="flex items-center space-x-2 my-2">
+                    <Checkbox id="terms" checked={isConfirmed} onCheckedChange={(checked) => setIsConfirmed(checked as boolean)} />
+                    <label
+                        htmlFor="terms"
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                        I confirm all players are 18+ and consent to potentially extreme content.
+                    </label>
+                </div>
+                <AlertDialogFooter>
+                    <AlertDialogCancel onClick={() => { triggerVibration(); onCancel(); }}>Go Back</AlertDialogCancel>
+                    <AlertDialogAction 
+                        disabled={!isConfirmed}
+                        onClick={() => { triggerVibration(); onConfirm(); }}
+                    >
+                        I Confirm
+                    </AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
+    );
 }
 
 export function CategorySelection({ onSelect, onBack }: CategorySelectionProps) {
@@ -54,30 +94,24 @@ export function CategorySelection({ onSelect, onBack }: CategorySelectionProps) 
             {categories.map((cat) => {
               if (cat.name === '18+') {
                 return (
-                  <AlertDialog key={cat.name}>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant={category === cat.name ? "default" : "outline"}
-                        className="w-full h-24 flex flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95"
-                        onClick={() => handleCategorySelect(cat.name)}
-                      >
-                        <cat.icon className="w-8 h-8"/>
-                        <span className="capitalize">{cat.name}</span>
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                          This category contains mature themes. Please ensure all players are 18 years of age or older.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel onClick={() => { triggerVibration(); setCategory(null); }}>Go Back</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => triggerVibration()}>I Confirm</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <AdultCategoryDialog 
+                    key={cat.name} 
+                    onConfirm={() => handleCategorySelect(cat.name)}
+                    onCancel={() => setCategory(null)}
+                  >
+                    <Button
+                      variant={category === cat.name ? "default" : "outline"}
+                      className="w-full h-24 flex flex-col gap-2 transition-transform transform-gpu hover:scale-105 active:scale-95"
+                      onClick={() => {
+                        // The dialog trigger handles the click, but we can pre-emptively set the category
+                        // This ensures the button style updates immediately.
+                        handleCategorySelect(cat.name)
+                      }}
+                    >
+                      <cat.icon className="w-8 h-8"/>
+                      <span className="capitalize">{cat.name}</span>
+                    </Button>
+                  </AdultCategoryDialog>
                 );
               }
               return (
