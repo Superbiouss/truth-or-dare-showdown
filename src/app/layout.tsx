@@ -2,9 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { ThemeProvider } from '@/components/theme-provider';
-import { ThemeToggle } from '@/components/theme-toggle';
 import { AccentThemeProvider } from '@/contexts/accent-theme-provider';
-import { ThemeCustomizer } from '@/components/theme-customizer';
 
 export const metadata: Metadata = {
   title: 'Truth or Dare Showdown',
@@ -32,8 +30,6 @@ export default function RootLayout({
           >
             <AccentThemeProvider>
               {children}
-              <ThemeCustomizer />
-              <ThemeToggle />
               <Toaster />
             </AccentThemeProvider>
           </ThemeProvider>
