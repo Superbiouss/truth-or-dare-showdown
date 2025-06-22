@@ -12,9 +12,10 @@ import Confetti from 'react-confetti';
 interface LeaderboardProps {
   players: Player[];
   onPlayAgain: () => void;
+  onExit: () => void;
 }
 
-export function Leaderboard({ players, onPlayAgain }: LeaderboardProps) {
+export function Leaderboard({ players, onPlayAgain, onExit }: LeaderboardProps) {
   const sortedPlayers = [...players].sort((a, b) => b.score - a.score);
   const [showConfetti, setShowConfetti] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -44,6 +45,11 @@ export function Leaderboard({ players, onPlayAgain }: LeaderboardProps) {
     triggerVibration([100, 50, 100]);
     onPlayAgain();
   }
+
+  const handleExitClick = () => {
+    triggerVibration();
+    onExit();
+  };
 
   return (
     <>
@@ -97,9 +103,12 @@ export function Leaderboard({ players, onPlayAgain }: LeaderboardProps) {
             </TableBody>
           </Table>
         </CardContent>
-        <CardFooter>
+        <CardFooter className="flex flex-col gap-2 pt-4">
           <Button onClick={handlePlayAgainClick} className="w-full" size="lg">
             Play Again
+          </Button>
+          <Button onClick={handleExitClick} variant="outline" className="w-full">
+            Exit Game
           </Button>
         </CardFooter>
       </Card>

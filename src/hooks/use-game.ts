@@ -161,6 +161,12 @@ export function useGame() {
 
   const handlePlayAgain = useCallback(() => {
     clearGameState();
+    setPlayers(players.map(p => ({ ...p, score: 0 })));
+    setScreen('category-selection');
+  }, [players, clearGameState]);
+  
+  const handleExitToWelcome = useCallback(() => {
+    clearGameState();
     setPlayers([]);
     setCategory('kids');
     setIntensity(1);
@@ -169,7 +175,7 @@ export function useGame() {
     setCurrentPlayerIndex(0);
     setScreen('welcome');
   }, [clearGameState]);
-  
+
   const handleShowHistory = useCallback(() => {
     setScreen('history');
   }, []);
@@ -202,5 +208,6 @@ export function useGame() {
     handleBackToSetup,
     handleBackToWelcome,
     setIsTtsEnabled,
+    handleExitToWelcome,
   };
 }

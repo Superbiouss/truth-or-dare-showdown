@@ -32,6 +32,7 @@ export default function Home() {
     handleBackToSetup,
     handleBackToWelcome,
     setIsTtsEnabled,
+    handleExitToWelcome,
   } = useGame();
 
   const renderScreen = () => {
@@ -58,7 +59,7 @@ export default function Home() {
           />
         );
       case 'leaderboard':
-        return <Leaderboard players={players} onPlayAgain={handlePlayAgain} />;
+        return <Leaderboard players={players} onPlayAgain={handlePlayAgain} onExit={handleExitToWelcome} />;
       case 'history':
         return <GameHistory history={gameHistory} onBack={handleBackToWelcome} />;
       default:
