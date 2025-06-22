@@ -37,7 +37,7 @@ export default function Home() {
       case 'welcome':
         return <WelcomeScreen onGetStarted={handleGetStarted} />;
       case 'player-setup':
-        return <PlayerSetup onStart={handleStartGame} onShowHistory={handleShowHistory} onBack={handleBackToWelcome} />;
+        return <PlayerSetup onStart={handleStartGame} onShowHistory={handleShowHistory} />;
       case 'category-selection':
         return <CategorySelection onSelect={handleCategorySelect} onBack={handleBackToSetup} />;
       case 'game':
