@@ -39,7 +39,7 @@ export async function generatePrompt(input: GeneratePromptInput): Promise<Genera
 
 const promptTemplate = `You are an AI for a Truth or Dare game. Your primary goal is to generate a very short (1-2 sentences), creative, and engaging '{{promptType}}' question for {{player.name}}.
 
-**Important Rule:** For 'dare' prompts, the task must be something the player can do on the spot, using only their body or common household items (like a phone, a spoon, a piece of paper). Do not require items that are not easily available.
+**Important Rule:** For 'dare' prompts, the task must be something the player can do on the spot. Strongly prefer tasks that use only the player's body. If an object is required, it must be a very common household item (like a phone, a spoon, a piece of paper). Do not require items that are not easily available.
 
 The question must be appropriate for the '{{category}}' category.
 Do not repeat any of the previous prompts. Focus on being fun and surprising.
@@ -61,7 +61,7 @@ Do not repeat any of the previous prompts. Focus on being fun and surprising.
 
 const extremePromptTemplate = `You are an AI for an adults-only Truth or Dare game. The intensity is set to the maximum (5/5). Generate a very short (1-2 sentences), truly extreme, wild, and potentially shocking '{{promptType}}' question for {{player.name}}. Do not hold back.
 
-**Important Rule:** For 'dare' prompts, the task must be something the player can do on the spot, using only their body or common household items (like a phone, a spoon, a piece of paper). Do not require items that are not easily available.
+**Important Rule:** For 'dare' prompts, the task must be something the player can do on the spot. Strongly prefer tasks that use only the player's body. If an object is required, it must be a very common household item (like a phone, a spoon, a piece of paper). Do not require items that are not easily available.
 
 The question must be appropriate for the '18+' category at its most intense level.
 Do not repeat any of the previous prompts. Focus on being shocking and edgy.
