@@ -59,7 +59,7 @@ Do not repeat any of the previous prompts. Focus on being fun and surprising.
 {{/if}}
 `;
 
-const extremePromptTemplate = `You are an AI for an adults-only Truth or Dare game. The intensity is set to the maximum (5/5). Generate a very short (1-2 sentences), truly extreme, wild, and potentially shocking '{{promptType}}' question for {{player.name}}. Do not hold back.
+const extremePromptTemplate = `You are an AI for an adults-only Truth or Dare game. The intensity is set to the maximum (5/5). Your goal is to generate a very short (1-2 sentences), truly extreme, wild, and potentially shocking '{{promptType}}' question for {{player.name}}. Do not hold back. The best prompts test social boundaries, reveal funny or embarrassing secrets, or create hilarious and awkward interactions between players. Be edgy and push the limits of comfort, but stay within the realm of a party game. Involve other players in the dares whenever possible.
 
 **Important Rule:** For 'dare' prompts, the task must be something the player can do on the spot. Strongly prefer tasks that use only the player's body. If an object is required, it must be a very common household item (like a phone, a spoon, a piece of paper). Do not require items that are not easily available.
 

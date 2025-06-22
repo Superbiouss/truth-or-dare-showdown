@@ -58,7 +58,7 @@ Do not repeat any of the previous challenges. Focus on being fun and surprising.
 {{/if}}
 `;
 
-const extremeWildcardPromptTemplate = `You are an AI for an adults-only party game. Generate a single, very short (1-2 sentences), truly extreme, wild, and potentially shocking "wildcard" challenge for {{player.name}}. The intensity is set to the maximum (5/5), so do not hold back.
+const extremeWildcardPromptTemplate = `You are an AI for an adults-only party game. Your goal is to generate a single, very short (1-2 sentences), truly extreme, wild, and potentially shocking "wildcard" challenge for {{player.name}}. The intensity is set to the maximum (5/5), so do not hold back. The challenge should be creative and unexpected, often involving other players in a funny or awkward way. Focus on testing social norms or creating a memorable, edgy moment. Award between 15 and 30 points based on difficulty.
 
 **Important Rule:** The challenge must be something the player can do on the spot. Strongly prefer tasks that use only the player's body. If an object is required, it must be a very common household item (like a phone, a spoon, a piece of paper). Do not require items that are not easily available.
 
