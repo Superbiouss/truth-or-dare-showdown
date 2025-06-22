@@ -38,6 +38,8 @@ export async function generateWildcard(input: GenerateWildcardInput): Promise<Ge
 
 const promptTemplate = `You are an AI for a party game. Your primary goal is to generate a single, short (1-2 sentences), fun, and unexpected "wildcard" challenge for {{player.name}}.
 
+**Important Rule:** The challenge must be something the player can do on the spot, using only their body or common household items (like a phone, a spoon, a piece of paper). Do not require items that are not easily available.
+
 The challenge must be appropriate for the '{{category}}' category. Award between 15 and 30 points based on difficulty.
 Do not repeat any of the previous challenges. Focus on being fun and surprising.
 
@@ -57,6 +59,8 @@ Do not repeat any of the previous challenges. Focus on being fun and surprising.
 `;
 
 const extremeWildcardPromptTemplate = `You are an AI for an adults-only party game. Generate a single, very short (1-2 sentences), truly extreme, wild, and potentially shocking "wildcard" challenge for {{player.name}}. The intensity is set to the maximum (5/5), so do not hold back.
+
+**Important Rule:** The challenge must be something the player can do on the spot, using only their body or common household items (like a phone, a spoon, a piece of paper). Do not require items that are not easily available.
 
 The challenge must be appropriate for the '18+' category at its most intense. Award between 15 and 30 points based on difficulty.
 Do not repeat any of the previous challenges. Focus on being edgy and surprising.
