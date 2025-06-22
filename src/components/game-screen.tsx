@@ -77,7 +77,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
         category,
         intensity,
         players: otherPlayers,
-        previousPrompts: generatedPrompts.slice(-50), // Send recent history to AI
+        previousPrompts: generatedPrompts.slice(-1000), // Send recent history to AI
       };
 
       let selectedPrompt: Prompt | null = null;
@@ -88,7 +88,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
         const points = type === 'truth' ? 5 : 10;
         selectedPrompt = { type, text: result.prompt, points, timerInSeconds: result.timerInSeconds };
       } else if (type === 'wildcard') {
-        const result = await generateWildcard({ player: commonInput.player, category, intensity, players: commonInput.players, previousPrompts: commonInput.previousPrompts });
+        const result = await generateWildcard(commonInput);
         if (!result?.challenge) throw new Error("AI failed to generate a challenge.");
         selectedPrompt = { type, text: result.challenge, points: result.points, timerInSeconds: result.timerInSeconds };
       }
