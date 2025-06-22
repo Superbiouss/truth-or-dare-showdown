@@ -6,6 +6,8 @@ import { Icons } from "@/components/icons";
 import { ArrowRight } from "lucide-react";
 import { triggerVibration } from "@/lib/utils";
 import type { GameResult } from "@/lib/types";
+import { ThemeCustomizer } from "@/components/theme-customizer";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 interface WelcomeScreenProps {
   onGetStarted: () => void;
@@ -25,9 +27,13 @@ export function WelcomeScreen({ onGetStarted, onShowHistory, history }: WelcomeS
   }
 
   return (
-    <Card className="w-full max-w-md shadow-xl text-center">
+    <Card className="w-full max-w-md shadow-xl text-center relative">
+      <div className="absolute top-4 right-4 flex items-center gap-2">
+        <ThemeCustomizer />
+        <ThemeToggle />
+      </div>
       <CardHeader>
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-4 pt-8 sm:pt-0">
             <Icons.Logo className="w-16 h-16 text-primary" />
         </div>
         <CardTitle className="text-3xl">Welcome to the Showdown!</CardTitle>
