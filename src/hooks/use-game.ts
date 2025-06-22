@@ -105,12 +105,25 @@ export function useGame() {
 
   const handleEndGame = useCallback((finalPlayers: Player[] = players) => {
     const sortedPlayers = [...finalPlayers].sort((a, b) => b.score - a.score);
-    const winner = sortedPlayers[0];
+    
+    let winnerName = "No one";
+
+    if (sortedPlayers.length > 0 && sortedPlayers[0].score > 0) {
+        const topScore = sortedPlayers[0].score;
+        const winners = sortedPlayers.filter(p => p.score === topScore);
+
+        if (winners.length > 1) {
+            winnerName = `Tie: ${winners.map(p => p.name).join(' & ')}`;
+        } else {
+            winnerName = winners[0].name;
+        }
+    }
+
     const newGameResult: GameResult = {
       id: Date.now(),
       date: new Date().toLocaleDateString(),
       players: finalPlayers.map(({ name, score, avatar }) => ({ name, score, avatar })),
-      winnerName: winner && winner.score > 0 ? winner.name : "No one",
+      winnerName: winnerName,
     };
 
     const updatedHistory = [newGameResult, ...gameHistory].slice(0, 20); // Keep last 20 games

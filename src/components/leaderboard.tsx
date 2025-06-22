@@ -19,6 +19,8 @@ export function Leaderboard({ players, onPlayAgain }: LeaderboardProps) {
   const [showConfetti, setShowConfetti] = useState(false);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
+  const topScore = sortedPlayers.length > 0 && sortedPlayers[0].score > 0 ? sortedPlayers[0].score : 0;
+
   useEffect(() => {
     // This hook runs only on the client side
     const { innerWidth, innerHeight } = window;
@@ -75,14 +77,15 @@ export function Leaderboard({ players, onPlayAgain }: LeaderboardProps) {
             <TableBody>
               {sortedPlayers.map((player, index) => {
                 const AvatarIcon = Icons[player.avatar as AvatarIconKey];
+                const isWinner = player.score === topScore;
                 return (
                 <TableRow 
                   key={player.id} 
-                  className={`animate-in fade-in slide-in-from-bottom-4 ${index === 0 ? "bg-yellow-400/20" : ""}`}
+                  className={`animate-in fade-in slide-in-from-bottom-4 ${isWinner ? "bg-yellow-400/20" : ""}`}
                   style={{ animationDelay: `${index * 150}ms`, animationFillMode: 'backwards' }}
                 >
                   <TableCell className="font-medium text-center">
-                    {index === 0 ? <Icons.Crown className="w-5 h-5 inline text-yellow-500 animate-in zoom-in-150 duration-500 delay-500" /> : index + 1}
+                    {isWinner ? <Icons.Crown className="w-5 h-5 inline text-yellow-500 animate-in zoom-in-150 duration-500 delay-500" /> : index + 1}
                   </TableCell>
                   <TableCell className="flex items-center gap-3">
                     <AvatarIcon className="w-6 h-6" />
