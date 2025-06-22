@@ -5,15 +5,23 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Icons } from "@/components/icons";
 import { ArrowRight } from "lucide-react";
 import { triggerVibration } from "@/lib/utils";
+import type { GameResult } from "@/lib/types";
 
 interface WelcomeScreenProps {
   onGetStarted: () => void;
+  onShowHistory: () => void;
+  history: GameResult[];
 }
 
-export function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
+export function WelcomeScreen({ onGetStarted, onShowHistory, history }: WelcomeScreenProps) {
   const handleGetStartedClick = () => {
     triggerVibration([100, 50, 100]);
     onGetStarted();
+  }
+
+  const handleShowHistoryClick = () => {
+    triggerVibration();
+    onShowHistory();
   }
 
   return (
@@ -35,6 +43,12 @@ export function WelcomeScreen({ onGetStarted }: WelcomeScreenProps) {
           Get Started
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
+        {history && history.length > 0 && (
+          <Button onClick={handleShowHistoryClick} variant="outline" className="w-full">
+            <Icons.History className="mr-2 h-4 w-4" />
+            Game History
+          </Button>
+        )}
         <p className="text-xs text-muted-foreground text-center px-4">
           By playing, you assume all risks and are solely responsible for your actions. The creators of this game are not liable for any consequences. Please play responsibly.
         </p>

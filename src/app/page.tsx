@@ -37,9 +37,9 @@ export default function Home() {
   const renderScreen = () => {
     switch (screen) {
       case 'welcome':
-        return <WelcomeScreen onGetStarted={handleGetStarted} />;
+        return <WelcomeScreen onGetStarted={handleGetStarted} onShowHistory={handleShowHistory} history={gameHistory} />;
       case 'player-setup':
-        return <PlayerSetup onStart={handleStartGame} onShowHistory={handleShowHistory} />;
+        return <PlayerSetup onStart={handleStartGame} />;
       case 'category-selection':
         return <CategorySelection onSelect={handleCategorySelect} onBack={handleBackToSetup} />;
       case 'game':
@@ -62,7 +62,7 @@ export default function Home() {
       case 'history':
         return <GameHistory history={gameHistory} onBack={handleBackToWelcome} />;
       default:
-        return <WelcomeScreen onGetStarted={handleGetStarted} />;
+        return <WelcomeScreen onGetStarted={handleGetStarted} onShowHistory={handleShowHistory} history={gameHistory} />;
     }
   };
 
