@@ -8,12 +8,17 @@ Truth or Dare Showdown is a web-based party game built with Next.js and Genkit. 
 
 ## 📸 Screenshots
 
-| Welcome Screen | Player Setup |
-| :---: | :---: |
-| <img src="screenshots/welcome-screen.png" alt="Truth or Dare Showdown Welcome Screen"> | <img src="screenshots/player-setup.png" alt="Player Setup Screen"> |
-| **Game Screen** | **Leaderboard** |
-| <img src="screenshots/game-screen.png" alt="Game Screen with a dare"> | <img src="screenshots/leaderboard.png" alt="Leaderboard with scores and confetti"> |
+**Welcome Screen**
+<img src="screenshots/welcome-screen.png" alt="Truth or Dare Showdown Welcome Screen">
 
+**Player Setup**
+<img src="screenshots/player-setup.png" alt="Player Setup Screen">
+
+**Game Screen**
+<img src="screenshots/game-screen.png" alt="Game Screen with a dare">
+
+**Leaderboard**
+<img src="screenshots/leaderboard.png" alt="Leaderboard with scores and confetti">
 
 ---
 
