@@ -1,13 +1,12 @@
+
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import type { Player, GameCategory, Prompt } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Icons, AvatarIconKey } from "@/components/icons";
 import { triggerVibration, playTick, playTimesUp } from "@/lib/utils";
-import { generatePrompt } from "@/ai/flows/generatePromptFlow";
-import { generateWildcard } from "@/ai/flows/generateWildcardFlow";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -49,17 +48,26 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-
   const { toast } = useToast();
 
+  const clearTurnState = useCallback(() => {
+    setPrompt(null);
+    setTurnInProgress(false);
+    setIsLoading(false);
+    setIsTimerRunning(false);
+    setTimeLeft(null);
+    if (timerRef.current) {
+        clearInterval(timerRef.current);
+    }
+  }, []);
+  
   useEffect(() => {
     // Initialize AudioContext on the client for timer sounds
     if (typeof window !== 'undefined' && !audioContextRef.current) {
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
     }
-    // Reset turn state when player changes
     clearTurnState();
-  }, [currentPlayer?.id]);
+  }, [currentPlayer?.id, clearTurnState]);
 
 
   const handlePromptSelection = async (type: 'truth' | 'dare' | 'wildcard') => {
@@ -72,58 +80,66 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
         .filter(p => p.id !== currentPlayer.id)
         .map(({ name, gender }) => ({ name, gender }));
 
-      const commonInput = {
+      const body = {
         player: { name: currentPlayer.name, gender: currentPlayer.gender },
         category,
         intensity,
         players: otherPlayers,
-        previousPrompts: generatedPrompts.slice(-1000), // Send recent history to AI
+        previousPrompts: generatedPrompts.slice(-10),
+        promptType: type,
       };
 
-      let selectedPrompt: Prompt | null = null;
+      const response = await fetch('/api/stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
 
-      if (type === 'truth' || type === 'dare') {
-        const result = await generatePrompt({ ...commonInput, promptType: type });
-        if (!result?.prompt) throw new Error("AI failed to generate a prompt.");
-        const points = type === 'truth' ? 5 : 10;
-        selectedPrompt = { type, text: result.prompt, points, timerInSeconds: result.timerInSeconds };
-      } else if (type === 'wildcard') {
-        const result = await generateWildcard(commonInput);
-        if (!result?.challenge) throw new Error("AI failed to generate a challenge.");
-        selectedPrompt = { type, text: result.challenge, points: result.points, timerInSeconds: result.timerInSeconds };
+      if (!response.ok || !response.body) {
+        const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred' }));
+        throw new Error(errorData.error);
       }
+      
+      setIsLoading(false);
+      
+      const points = parseInt(response.headers.get('X-Prompt-Points') || '0', 10);
+      setPrompt({ type, text: '', points });
 
-      if (!selectedPrompt) return;
+      // Handle streaming response
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = '';
 
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const chunk = decoder.decode(value, { stream: true });
+        fullText += chunk;
+        setPrompt(prev => prev ? { ...prev, text: fullText } : null);
+      }
+      
+      // Post-stream processing
       if (isTtsEnabled) {
-        speak(selectedPrompt.text);
+        speak(fullText);
+      }
+      
+      // Parse timer from final text
+      const timeMatch = fullText.match(/(\d+)\s+(second|minute)/i);
+      if (timeMatch) {
+          let seconds = parseInt(timeMatch[1], 10);
+          if (timeMatch[2].toLowerCase() === 'minute') {
+              seconds *= 60;
+          }
+          setTimeLeft(seconds);
       }
 
-      setPrompt(selectedPrompt);
-      if (selectedPrompt.timerInSeconds) {
-        setTimeLeft(selectedPrompt.timerInSeconds);
-      }
     } catch (e: any) {
       console.error(e);
       toast({ title: "Oh no!", description: "The AI is having trouble coming up with ideas. Please try again.", variant: "destructive" });
-      setTurnInProgress(false); // Go back to selection screen
-    } finally {
-      setIsLoading(false);
+      clearTurnState();
     }
   };
   
-  const clearTurnState = () => {
-    setPrompt(null);
-    setTurnInProgress(false);
-    setIsLoading(false);
-    // Clear timer state
-    setIsTimerRunning(false);
-    setTimeLeft(null);
-    if (timerRef.current) {
-        clearInterval(timerRef.current);
-    }
-  }
-
   const handleComplete = () => {
     triggerVibration();
     if (prompt) {
@@ -243,13 +259,13 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                 ) : (
                     <div className="space-y-4 text-center animate-in fade-in zoom-in-95 duration-500 w-full">
                         <h3 className="text-xl font-semibold capitalize text-primary">{prompt?.type}</h3>
-                        <p className="text-2xl font-medium">{prompt?.text}</p>
-                        {prompt && (
+                        <p className="text-2xl font-medium min-h-[64px]">{prompt?.text}<span className="inline-block w-1 h-6 bg-primary/70 animate-pulse ml-1"></span></p>
+                        {prompt && prompt.points > 0 && (
                            <Badge variant="secondary" className="text-base">+{prompt.points} Points</Badge>
                         )}
                         
                         {/* Timer Section */}
-                        {prompt?.timerInSeconds && timeLeft !== null && (
+                        {timeLeft !== null && (
                             <div className="mt-6 space-y-4">
                                 <div className="text-6xl font-bold font-mono text-primary tabular-nums">
                                     {timeLeft}s
@@ -267,7 +283,7 @@ export function GameScreen({ players, currentPlayer, category, intensity, onTurn
                         )}
 
                         <div className="flex justify-center items-center gap-4 pt-4">
-                            <Button onClick={handleSkip} size="lg" variant="outline" className="transition-transform transform-gpu hover:scale-105 active:scale-95">
+                            <Button onClick={handleSkip} size="lg" variant="outline" className="transition-transform transform-gpu hover:scale-105 active:scale-95" disabled={isTimerRunning}>
                                 Skip (-5 Pts)
                             </Button>
                             <Button onClick={handleComplete} size="lg" className="transition-transform transform-gpu hover:scale-105 active:scale-95" disabled={isTimerRunning}>
