@@ -1,0 +1,87 @@
+[33m9de81e0[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mGoing-back-to-working-stage[m[33m, [m[1;31morigin/Going-back-to-working-stage[m[33m)[m I want you to update the images in read me file with these exact file na
+[33mcb44a3d[m This is what it shows and when I tried to reload my github website again
+[33mc04d249[m The screenshots are not visible
+[33m183798c[m I want you to add those images in a sequence
+[33m6e6ce15[m I have added a file in project named screenshots
+[33m998e297[m Add a button to exit on the last screen after the game is done
+[33mb58ea47[m remove the game logo from all the pages except from welcome page
+[33ma683c31[m Not in the card but in background just like how the name of game is plac
+[33mea9f70f[m Only keep options to change theme and dark and light mode on welcome pag
+[33m9b39b82[m Make sure no task is repeated till 1000 rounds
+[33m5621282[m Now the tasks in 18+ category or extreme level are almost same , I give
+[33m497fa74[m There is a problem with the scores like when the scores are same at the
+[33m4e6ac85[m The task generated are repeating make sure they don't repeat for next 50
+[33m328604f[m I know but here the users are giving their consent to do anything and th
+[33m4ab68f3[m Make sure to only give tasks that are possible to do on the spot without
+[33mdfd3481[m Remove the trending topic feature we added
+[33m0e19153[m We can do that but make sure that no history button is displayed anywher
+[33m8b23131[m have a look at this the theme button and dark and light theme button ove
+[33mbe97d92[m remove the button to go to welcome page
+[33m9cf24d6[m I was thinking of making it an open source application and publish it on
+[33me0bce15[m I can't see the image of welcome page there , make sure you add images o
+[33mb0f2cc4[m Also Edit the readme file with current changes and also add a screenshot
+[33m9e0425e[m Now make final check so that I can commit changes that we made on github
+[33mb844b94[m Also include terms and conditions which clarifies that I am not responsi
+[33mc6fcb0e[m Don't you think that we should have something at start before adding pla
+[33m563a840[m Don't make the tasks too lengthy
+[33m600f8c2[m go with it
+[33m2800a3b[m while using AI to generate task use the most trending topics to give tas
+[33m305cadc[m Make the extreme level of 18+ content when the slider is at max value
+[33mfc8c835[m Make changes that feels best for this project without breaking any other
+[33mf428869[m Still the truth button has almost same color as background in both dark
+[33mf0253d4[m the box for truth is almost invisible due to similar color as a backgrou
+[33meb07e07[m when I reload the page it shows zinc for a while and then again goes bac
+[33m09a2710[m the default colour is still purple
+[33m0bf1cac[m I want that colour to appear as default before changing theme by user an
+[33ma9ce60a[m I want the dark colour ( which is next to purple ) to be default colour
+[33m76e9203[m now multiple theme option is missing and why is it purple , initially we
+[33m3a0d255[m fix all the problems and make this project error free and make the best
+[33ma8aa9fb[m the dark mode switch doesn't work , I want my previous theme settings
+[33m6571151[m timer problem like even if the task doesn't mention time the timer shows
+[33m87a3355[m check for problems in themes and all
+[33m903427e[m make sure to use free to use AI's because I don't want any limitations i
+[33mf3fbea2[m I see this error with the app, reported by NextJS, please fix it. The er
+[33mc3450d5[m after all those commands this is what is in my repository with the files
+[33md6fcb36[m Initial commit of Truth or Dare Showdown
+[33m8dd6259[m Can you do all of these for me ?
+[33mff44976[m lets stop here with this problem and focus on publishing it as an open s
+[33m2a09867[m check it by yourself now
+[33m54a34b2[m still the same problem
+[33m6184745[m Still the same
+[33maf45248[m The problem with the timer is back like even when there no specific time
+[33m1cde3cd[m yes and the problem with generating ideas still persists , fix it for me
+[33m2b50904[m It still has a problem with comming up with ideas
+[33m2bab548[m Can we change colour of those three buttons to be more visually appealin
+[33mdd813b5[m Include a button to go back from category choosing part to adding more p
+[33mee5afe2[m What if we add a game history to see all the games played , it will just
+[33m92193d9[m Can you make this project faster so that user doesn't have to wait
+[33m93a6325[m We and add presets for theme like we can have some themes that users can
+[33m4f0f3cc[m AI announcer limit reached problem , is there any free alternative that
+[33m05ddf3f[m I see this error with the app, reported by NextJS, please fix it. The er
+[33ma84d9b2[m Can you fix all the possible problems with audio
+[33m6662f57[m What up with this ?
+[33mba9262a[m Now I don't hear anything even when the voice is toggled on
+[33m262ebc8[m The voice does not feel like natural voice like even for normal sentence
+[33m9e12f70[m It added timer in every single task , all I wanted was that if by chance
+[33mecee138[m If the prompt includes a task related to timer start a timer with contin
+[33md1c2f95[m Or maybe add the option before hand like when the players are added at t
+[33m5053849[m the voice delay between the task shown on the screen and the actual voic
+[33mb88edee[m The NextJS app server is having trouble starting. Please identify what c
+[33mf566795[m We could add a button which enables or disables voice and seperate those
+[33m60d2edc[m Once the task is used make sure it does not repeat till next 25 rounds.
+[33m25b7854[m The colours used in dark theme should be more like my current interface
+[33m248624b[m AI generated prompts are too big so make sure the tasks are easy to unde
+[33m98fb161[m I see this error with the app, reported by NextJS, please fix it. The er
+[33m579ff8e[m Can you make to toggle button go from light theme to dark theme , try th
+[33mcf4cfd6[m Once the game ends , use confetti style to celebrate
+[33mfc9a472[m The NextJS app server is having trouble starting. Please identify what c
+[33m912aeb0[m If you can change it according to users accent colour then just use the
+[33mf3b5ee0[m Add a radio button under each player to select gender of the player
+[33me9b7fd7[m Remove the ludo type player choosing option and restore the previous one
+[33m725cc50[m Include animations and haptic features to give users more interactive fe
+[33m9a74466[m remove the scores and keep it as it was before
+[33m109bb50[m Also show the scores on the screen while the game is still in the proces
+[33md67a831[m I want it to give options like how a ludo game has to choose number of p
+[33m8487275[m Make the UI and UX more modern themed and use glass effect for the cards
+[33m43e2034[m Updated app
+[33m73da13e[m initial scaffold
